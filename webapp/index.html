@@ -1,13 +1,17 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <title>Dr. B.R. Ambedkar AI</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dr. B.R. Ambedkar AI - Voice Enabled</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
             min-height: 100vh;
             padding: 20px;
@@ -17,285 +21,158 @@
             margin: 0 auto;
             background: white;
             border-radius: 20px;
+            padding: 30px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            display: flex;
-            flex-direction: column;
-            height: 85vh;
-            overflow: hidden;
         }
-        .header {
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            color: white;
-            padding: 20px;
-            text-align: center;
+        h1 {
+            color: #1e3c72;
+            margin-bottom: 10px;
+            font-size: 28px;
         }
-        .controls {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-top: 10px;
-            flex-wrap: wrap;
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            border-left: 4px solid #ffd700;
+            padding-left: 15px;
+        }
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            font-family: inherit;
+            resize: vertical;
+            transition: border-color 0.3s;
+        }
+        textarea:focus {
+            outline: none;
+            border-color: #2a5298;
         }
         button {
-            background: rgba(255,255,255,0.2);
-            border: none;
-            padding: 8px 16px;
-            border-radius: 20px;
+            background: #2a5298;
             color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 16px;
             cursor: pointer;
-            font-size: 14px;
-            transition: all 0.3s;
+            margin-top: 15px;
+            transition: background 0.3s;
         }
-        button:hover { background: rgba(255,255,255,0.3); transform: scale(1.05); }
-        button.active { background: #ffd700; color: #1e3c72; }
-        .mic-btn { background: #4CAF50; }
-        .mic-btn.recording { background: #f44336; animation: pulse 1s infinite; }
-        .mic-btn.mic-disabled { background: #999; cursor: not-allowed; }
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
+        button:hover {
+            background: #1e3c72;
         }
-        .messages { flex: 1; overflow-y: auto; padding: 20px; background: #f5f5f5; }
-        .message { margin-bottom: 20px; display: flex; animation: fadeIn 0.3s; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .user { justify-content: flex-end; }
-        .assistant { justify-content: flex-start; }
-        .bubble {
-            max-width: 70%;
-            padding: 12px 16px;
-            border-radius: 18px;
-            line-height: 1.5;
+        #response {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 25px;
+            white-space: pre-wrap;
+            line-height: 1.6;
+            font-size: 15px;
         }
-        .user .bubble { background: #2a5298; color: white; border-bottom-right-radius: 4px; }
-        .assistant .bubble { background: white; color: #333; border-bottom-left-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .input-area { padding: 20px; background: white; border-top: 1px solid #e0e0e0; display: flex; gap: 10px; }
-        .input-area input { flex: 1; padding: 12px; border: 2px solid #e0e0e0; border-radius: 25px; font-size: 16px; outline: none; }
-        .input-area input:focus { border-color: #2a5298; }
-        .input-area button { background: #2a5298; color: white; padding: 12px 24px; border-radius: 25px; }
-        .input-area button:disabled { background: #ccc; cursor: not-allowed; }
-        .typing { display: flex; padding: 12px 16px; background: white; border-radius: 18px; width: fit-content; }
-        .typing span { width: 8px; height: 8px; background: #999; border-radius: 50%; display: inline-block; margin: 0 2px; animation: bounce 1.4s infinite; }
-        @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
-        .disclaimer { text-align: center; padding: 10px; font-size: 10px; color: #999; background: #f9f9f9; }
-        .voice-status { font-size: 11px; margin-top: 5px; color: #4CAF50; }
+        .loading {
+            color: #666;
+            font-style: italic;
+            text-align: center;
+            padding: 20px;
+        }
+        .footer {
+            margin-top: 25px;
+            font-size: 12px;
+            color: #999;
+            text-align: center;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+        .sample-questions {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .sample-btn {
+            background: #e8e8e8;
+            color: #333;
+            padding: 8px 15px;
+            font-size: 12px;
+            margin-top: 0;
+        }
+        .sample-btn:hover {
+            background: #d0d0d0;
+        }
     </style>
 </head>
 <body>
-<div class="container">
-    <div class="header">
-        <h2>Dr. B.R. Ambedkar AI</h2>
-        <p>Ask questions • Voice enabled • Remembers conversation • Hindi support</p>
-        <div class="controls">
-            <button id="engBtn" class="active" onclick="setLanguage('en')">🇬🇧 English</button>
-            <button id="hiBtn" onclick="setLanguage('hi')">🇮🇳 हिन्दी</button>
-            <button id="micBtn" class="mic-btn" onclick="toggleVoice()">🎤 Voice</button>
-            <button onclick="clearMemory()">🗑️ Clear</button>
+    <div class="container">
+        <h1>Dr. B.R. Ambedkar AI</h1>
+        <div class="subtitle">Ask questions based on his writings, speeches, and parliamentary debates</div>
+        
+        <textarea id="question" rows="4" placeholder="Example: What is your view on the caste system?"></textarea>
+        
+        <div class="sample-questions">
+            <button class="sample-btn" onclick="setQuestion('What is your view on the caste system?')">📜 Caste System</button>
+            <button class="sample-btn" onclick="setQuestion('Why is education important?')">📚 Education</button>
+            <button class="sample-btn" onclick="setQuestion('What is your message to young people?')">💬 Message to Youth</button>
+            <button class="sample-btn" onclick="setQuestion('What is social justice?')">⚖️ Social Justice</button>
         </div>
-        <div id="voiceStatus" class="voice-status"></div>
+        
+        <button onclick="askQuestion()">Ask Dr. Ambedkar</button>
+        
+        <div id="response"></div>
+        <div class="footer">Based on Dr. B.R. Ambedkar's collected writings • Cloud-hosted on AWS</div>
     </div>
-    <div class="messages" id="messages">
-        <div class="message assistant">
-            <div class="bubble">Namaste. I am Dr. B.R. Ambedkar. I remember our conversation. You can speak using the mic button. What would you like to discuss?</div>
-        </div>
-    </div>
-    <div class="input-area">
-        <input type="text" id="question" placeholder="Type your question or click mic to speak..." onkeypress="if(event.key=='Enter') send()">
-        <button id="sendBtn" onclick="send()">Send</button>
-    </div>
-    <div class="disclaimer">Based on Dr. Ambedkar's writings • Remembers conversation • Voice in Chrome works best</div>
-</div>
 
-<script>
-const API = 'http://localhost:8000/api/v1';
-let sessionId = 'session_' + Date.now();
-let currentLang = 'en';
-let recognition = null;
-let recording = false;
-
-// Check browser support
-if ('webkitSpeechRecognition' in window) {
-    recognition = new webkitSpeechRecognition();
-    recognition.continuous = false;
-    recognition.interimResults = false;
-    recognition.lang = 'en-US';
-    
-    recognition.onstart = function() {
-        console.log('Voice recognition started');
-        document.getElementById('voiceStatus').innerHTML = '🎤 Listening... Speak now';
-    };
-    
-    recognition.onresult = function(event) {
-        const transcript = event.results[0][0].transcript;
-        console.log('Heard:', transcript);
-        document.getElementById('question').value = transcript;
-        document.getElementById('voiceStatus').innerHTML = '✅ Voice captured: "' + transcript + '"';
-        setTimeout(() => {
-            document.getElementById('voiceStatus').innerHTML = '';
-        }, 2000);
-        send();
-        toggleMic(false);
-    };
-    
-    recognition.onerror = function(event) {
-        console.error('Voice error:', event.error);
-        let errorMsg = '';
-        if (event.error === 'not-allowed') {
-            errorMsg = '❌ Microphone access denied. Please allow microphone permission.';
-        } else if (event.error === 'no-speech') {
-            errorMsg = '❌ No speech detected. Please try again.';
-        } else {
-            errorMsg = '❌ Voice error: ' + event.error;
+    <script>
+        const API_URL = 'http://13.207.4.184:8000';
+        
+        function setQuestion(text) {
+            document.getElementById('question').value = text;
+            askQuestion();
         }
-        document.getElementById('voiceStatus').innerHTML = errorMsg;
-        setTimeout(() => {
-            document.getElementById('voiceStatus').innerHTML = '';
-        }, 3000);
-        toggleMic(false);
-    };
-    
-    recognition.onend = function() {
-        console.log('Voice recognition ended');
-        toggleMic(false);
-    };
-} else {
-    console.log('Voice not supported');
-    document.getElementById('micBtn').disabled = true;
-    document.getElementById('micBtn').classList.add('mic-disabled');
-    document.getElementById('micBtn').textContent = '🎤 Not Supported';
-    document.getElementById('voiceStatus').innerHTML = '⚠️ Voice not supported in this browser. Please use Chrome.';
-}
-
-function toggleVoice() {
-    if (!recognition) {
-        alert("Voice recognition is not supported in your browser. Please use Chrome, Edge, or Safari.");
-        return;
-    }
-    
-    if (recording) {
-        recognition.stop();
-        toggleMic(false);
-        document.getElementById('voiceStatus').innerHTML = '🎤 Stopped listening';
-        setTimeout(() => {
-            document.getElementById('voiceStatus').innerHTML = '';
-        }, 1500);
-    } else {
-        // Request permission first
-        navigator.mediaDevices.getUserMedia({ audio: true })
-            .then(function(stream) {
-                stream.getTracks().forEach(track => track.stop());
-                recognition.lang = currentLang === 'en' ? 'en-US' : 'hi-IN';
-                recognition.start();
-                toggleMic(true);
-                document.getElementById('voiceStatus').innerHTML = '🎙️ Listening... Speak now';
-            })
-            .catch(function(err) {
-                console.error('Microphone permission denied:', err);
-                alert('Please allow microphone access to use voice input.');
-                document.getElementById('voiceStatus').innerHTML = '❌ Microphone access denied';
-                setTimeout(() => {
-                    document.getElementById('voiceStatus').innerHTML = '';
-                }, 3000);
-            });
-    }
-}
-
-function toggleMic(active) {
-    recording = active;
-    const btn = document.getElementById('micBtn');
-    if (active) {
-        btn.textContent = '🔴 Recording...';
-        btn.classList.add('recording');
-    } else {
-        btn.textContent = '🎤 Voice';
-        btn.classList.remove('recording');
-    }
-}
-
-function setLanguage(lang) {
-    currentLang = lang;
-    document.getElementById('engBtn').classList.toggle('active', lang === 'en');
-    document.getElementById('hiBtn').classList.toggle('active', lang === 'hi');
-    if (recognition) {
-        recognition.lang = lang === 'en' ? 'en-US' : 'hi-IN';
-    }
-    const msg = lang === 'en' ? 'Switched to English' : 'हिंदी में बदल दिया गया';
-    document.getElementById('voiceStatus').innerHTML = '🌐 ' + msg;
-    setTimeout(() => {
-        document.getElementById('voiceStatus').innerHTML = '';
-    }, 1500);
-}
-
-async function send() {
-    const input = document.getElementById('question');
-    const q = input.value.trim();
-    if (!q) return;
-    
-    addMessage(q, 'user');
-    input.value = '';
-    showTyping();
-    document.getElementById('sendBtn').disabled = true;
-    
-    try {
-        const res = await fetch(`${API}/chat`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                question: q, 
-                session_id: sessionId, 
-                language: currentLang 
-            })
+        
+        async function askQuestion() {
+            const question = document.getElementById('question').value.trim();
+            const responseDiv = document.getElementById('response');
+            
+            if (!question) {
+                responseDiv.innerHTML = '<span style="color: red;">❌ Please enter a question.</span>';
+                return;
+            }
+            
+            responseDiv.innerHTML = '<div class="loading">🤔 Dr. Ambedkar is reflecting on your question...</div>';
+            
+            try {
+                const response = await fetch(`${API_URL}/api/v1/chat`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ 
+                        question: question, 
+                        session_id: "web_" + Date.now(),
+                        language: "en"
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const data = await response.json();
+                responseDiv.innerHTML = data.response;
+            } catch (error) {
+                responseDiv.innerHTML = `<span style="color: red;">❌ Error: ${error.message}</span>`;
+            }
+        }
+        
+        // Allow Ctrl+Enter to submit
+        document.getElementById('question').addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                askQuestion();
+            }
         });
-        const data = await res.json();
-        removeTyping();
-        addMessage(data.response, 'assistant');
-    } catch(e) {
-        removeTyping();
-        addMessage("❌ Error: Make sure backend server is running (python run.py)", 'assistant');
-    }
-    document.getElementById('sendBtn').disabled = false;
-}
-
-async function clearMemory() {
-    try {
-        await fetch(`${API}/clear-memory`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ session_id: sessionId })
-        });
-        addMessage("🗑️ Conversation memory cleared. How can I help you?", 'assistant');
-        document.getElementById('voiceStatus').innerHTML = '✅ Memory cleared';
-        setTimeout(() => {
-            document.getElementById('voiceStatus').innerHTML = '';
-        }, 1500);
-    } catch(e) {
-        console.error(e);
-    }
-}
-
-function addMessage(text, sender) {
-    const messagesDiv = document.getElementById('messages');
-    const div = document.createElement('div');
-    div.className = `message ${sender}`;
-    div.innerHTML = `<div class="bubble">${text.replace(/\n/g, '<br>')}</div>`;
-    messagesDiv.appendChild(div);
-    div.scrollIntoView({ behavior: 'smooth' });
-}
-
-function showTyping() {
-    const messagesDiv = document.getElementById('messages');
-    const div = document.createElement('div');
-    div.className = 'message assistant';
-    div.id = 'typing';
-    div.innerHTML = '<div class="typing"><span></span><span></span><span></span></div>';
-    messagesDiv.appendChild(div);
-    div.scrollIntoView({ behavior: 'smooth' });
-}
-
-function removeTyping() {
-    const typing = document.getElementById('typing');
-    if (typing) typing.remove();
-}
-</script>
+    </script>
 </body>
 </html>
