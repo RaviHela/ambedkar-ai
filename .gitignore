@@ -1,44 +1,9 @@
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
 venv/
-env/
-ENV/
-.venv
-
-# Database
-*.db
-*.sqlite
-chroma_db/
-simple_db/
-
-# Environment variables
+__pycache__/
+*.pyc
 .env
-.env.local
-.env.*.local
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-.DS_Store
-
-# Logs
-*.log
-logs/
-
-# Uploads
+chroma_db/
 data/raw/*.pdf
 data/processed/
-
-# OS
-Thumbs.db
 .DS_Store
-
-# API keys
-config.py.local
+*.log
