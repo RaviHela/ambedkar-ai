@@ -1,0 +1,11 @@
+cat > webapp/manifest.json << 'EOF'
+{
+    "name": "Dr. B.R. Ambedkar AI",
+    "short_name": "Ambedkar AI",
+    "description": "AI Persona of Dr. B.R. Ambedkar",
+    "start_url": ".",
+    "display": "standalone",
+    "theme_color": "#1e3c72",
+    "background_color": "#ffffff"
+}
+EOF
