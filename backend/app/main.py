@@ -4,7 +4,6 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from app.api.routes import router
 import os
-import sys
 
 app = FastAPI(
     title="Dr. B.R. Ambedkar AI Persona",
@@ -23,15 +22,18 @@ app.add_middleware(
 # Include API routes
 app.include_router(router, prefix="/api/v1")
 
+# Serve static files (images, CSS, etc.)
+webapp_static_path = "/home/ubuntu/ambedkar-ai/webapp/static"
+if os.path.exists(webapp_static_path):
+    app.mount("/static", StaticFiles(directory=webapp_static_path), name="static")
+
 # Find webapp directory dynamically
 def find_webapp_path():
-    # Try multiple possible locations
     possible_paths = [
-        "/home/ubuntu/ambedkar-ai/webapp",  # AWS EC2
-        os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "webapp"),  # Local Mac (backend/../webapp)
-        "webapp"  # Relative path
+        "/home/ubuntu/ambedkar-ai/webapp",
+        os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "webapp"),
+        "webapp"
     ]
-    
     for path in possible_paths:
         if os.path.exists(path) and os.path.isdir(path):
             return path
@@ -41,8 +43,6 @@ webapp_path = find_webapp_path()
 if webapp_path:
     app.mount("/", StaticFiles(directory=webapp_path, html=True), name="webapp")
     print(f"Serving webapp from {webapp_path}")
-else:
-    print("Webapp directory not found")
 
 @app.get("/health")
 async def health():

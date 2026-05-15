@@ -28,6 +28,15 @@
             color: #1e3c72;
             margin-bottom: 10px;
             font-size: 28px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .title-image {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
         }
         .subtitle {
             color: #666;
@@ -43,7 +52,6 @@
             font-size: 16px;
             font-family: inherit;
             resize: vertical;
-            transition: border-color 0.3s;
         }
         textarea:focus {
             outline: none;
@@ -58,7 +66,6 @@
             font-size: 16px;
             cursor: pointer;
             margin-top: 15px;
-            transition: background 0.3s;
         }
         button:hover {
             background: #1e3c72;
@@ -72,11 +79,37 @@
             line-height: 1.6;
             font-size: 15px;
         }
-        .loading {
-            color: #666;
-            font-style: italic;
+        .thinking-container {
             text-align: center;
             padding: 20px;
+            display: none;
+            background: #f5f5f5;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        .thinking-image {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 15px;
+            animation: gentlePulse 1.5s ease-in-out infinite;
+        }
+        @keyframes gentlePulse {
+            0% { opacity: 0.6; transform: scale(0.98); box-shadow: 0 0 0 0 rgba(42, 82, 152, 0.4); }
+            50% { opacity: 1; transform: scale(1.02); box-shadow: 0 0 0 15px rgba(42, 82, 152, 0); }
+            100% { opacity: 0.6; transform: scale(0.98); box-shadow: 0 0 0 0 rgba(42, 82, 152, 0); }
+        }
+        .thinking-dots {
+            font-style: italic;
+            color: #666;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        .thinking-subtitle {
+            font-size: 12px;
+            color: #999;
+            margin-top: 5px;
         }
         .footer {
             margin-top: 25px;
@@ -106,7 +139,10 @@
 </head>
 <body>
     <div class="container">
-        <h1>Dr. B.R. Ambedkar AI</h1>
+        <h1>
+            <img src="/static/ambedkar-profile.jpg" alt="Dr. B.R. Ambedkar" class="title-image" onerror="this.style.display='none'">
+            Dr. B.R. Ambedkar AI
+        </h1>
         <div class="subtitle">Ask questions based on his writings, speeches, and parliamentary debates</div>
         
         <textarea id="question" rows="4" placeholder="Example: What is your view on the caste system?"></textarea>
@@ -120,16 +156,31 @@
         
         <button onclick="askQuestion()">Ask Dr. Ambedkar</button>
         
+        <div id="thinkingIndicator" class="thinking-container">
+            <img src="/static/ambedkar-profile.jpg" alt="Dr. B.R. Ambedkar" class="thinking-image" onerror="this.style.display='none'">
+            <div class="thinking-dots">Dr. Ambedkar is reflecting on your question<span>.</span><span>.</span><span>.</span></div>
+            <div class="thinking-subtitle">Drawing from his writings and speeches...</div>
+        </div>
+        
         <div id="response"></div>
         <div class="footer">Based on Dr. B.R. Ambedkar's collected writings • Cloud-hosted on AWS</div>
     </div>
 
     <script>
-        const API_URL = 'http://13.207.4.184:8000';
+        const API_URL = 'http://13.206.144.244:8000';
         
         function setQuestion(text) {
             document.getElementById('question').value = text;
             askQuestion();
+        }
+        
+        function showThinking() {
+            document.getElementById('thinkingIndicator').style.display = 'block';
+            document.getElementById('response').innerHTML = '';
+        }
+        
+        function hideThinking() {
+            document.getElementById('thinkingIndicator').style.display = 'none';
         }
         
         async function askQuestion() {
@@ -141,7 +192,7 @@
                 return;
             }
             
-            responseDiv.innerHTML = '<div class="loading">🤔 Dr. Ambedkar is reflecting on your question...</div>';
+            showThinking();
             
             try {
                 const response = await fetch(`${API_URL}/api/v1/chat`, {
@@ -161,8 +212,10 @@
                 }
                 
                 const data = await response.json();
+                hideThinking();
                 responseDiv.innerHTML = data.response;
             } catch (error) {
+                hideThinking();
                 responseDiv.innerHTML = `<span style="color: red;">❌ Error: ${error.message}</span>`;
             }
         }
