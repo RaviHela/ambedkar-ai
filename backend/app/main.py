@@ -1,13 +1,13 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, FileResponse
+from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from app.api.routes import router
 import os
+import sys
 
 app = FastAPI(
     title="Dr. B.R. Ambedkar AI Persona",
-    description="AI that answers based on Dr. Ambedkar's writings and speeches",
     version="3.0.0"
 )
 
@@ -20,22 +20,29 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include API routes (must be before static mount)
+# Include API routes
 app.include_router(router, prefix="/api/v1")
 
-# Serve static files (CSS, JS, etc.)
-webapp_path = "/app/webapp"
-if os.path.exists(webapp_path):
-    app.mount("/static", StaticFiles(directory=webapp_path), name="static")
+# Find webapp directory dynamically
+def find_webapp_path():
+    # Try multiple possible locations
+    possible_paths = [
+        "/home/ubuntu/ambedkar-ai/webapp",  # AWS EC2
+        os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "webapp"),  # Local Mac (backend/../webapp)
+        "webapp"  # Relative path
+    ]
+    
+    for path in possible_paths:
+        if os.path.exists(path) and os.path.isdir(path):
+            return path
+    return None
 
-@app.get("/")
-async def serve_index():
-    """Serve the web app index.html"""
-    webapp_path = "/app/webapp/index.html"
-    if os.path.exists(webapp_path):
-        with open(webapp_path, "r") as f:
-            return HTMLResponse(content=f.read())
-    return {"message": "Web app not found"}
+webapp_path = find_webapp_path()
+if webapp_path:
+    app.mount("/", StaticFiles(directory=webapp_path, html=True), name="webapp")
+    print(f"Serving webapp from {webapp_path}")
+else:
+    print("Webapp directory not found")
 
 @app.get("/health")
 async def health():
