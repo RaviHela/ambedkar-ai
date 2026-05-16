@@ -175,11 +175,13 @@
         <div class="subtitle" id="subtitle">Ask questions based on his writings, speeches, and parliamentary debates</div>
         
         <!-- Language Tabs -->
-        <div class="language-tabs">
-            <button class="lang-tab active" onclick="setLanguage('en')">English</button>
-            <button class="lang-tab" onclick="setLanguage('hi')">हिन्दी</button>
         </div>
-        
+       <div class="language-tabs">
+    	<button class="lang-tab active" onclick="setLanguage('en')">English</button>
+    	<button class="lang-tab" onclick="setLanguage('hi')">हिन्दी</button>
+    	<button class="lang-tab" onclick="setLanguage('bn')">বাংলা</button>
+	</div>
+ 
         <div class="question-area">
             <textarea id="question" rows="4" placeholder="Example: What is your view on the caste system?"></textarea>
             
@@ -234,39 +236,54 @@
                     { text: "💬 युवाओं के लिए संदेश", question: "युवाओं के लिए आपका क्या संदेश है?" },
                     { text: "⚖️ सामाजिक न्याय", question: "सामाजिक न्याय क्या है?" }
                 ]
-            }
+            },
+bn: {
+        subtitle: "ডঃ বি.আর. আম্বেদকরের লেখা, বক্তৃতা এবং সংসদীয় বিতর্কের ভিত্তিতে প্রশ্ন করুন",
+        placeholder: "উদাহরণ: জাত ব্যবস্থা সম্পর্কে আপনার দৃষ্টিভঙ্গি কী?",
+        askButton: "ডঃ আম্বেদকরকে জিজ্ঞাসা করুন",
+        thinking: "ডঃ আম্বেদকর আপনার প্রশ্নটি নিয়ে চিন্তা করছেন",
+        thinkingSub: "তাঁর লেখা এবং বক্তৃতা থেকে...",
+        sampleQuestions: [
+            { text: "📜 জাত ব্যবস্থা", question: "জাত ব্যবস্থা সম্পর্কে আপনার দৃষ্টিভঙ্গি কী?" },
+            { text: "📚 শিক্ষা", question: "শিক্ষা কেন গুরুত্বপূর্ণ?" },
+            { text: "💬 যুবকদের জন্য বার্তা", question: "যুবকদের জন্য আপনার বার্তা কী?" },
+            { text: "⚖️ সামাজিক ন্যায়বিচার", question: "সামাজিক ন্যায়বিচার কী?" }
+        ]
+    }	
         };
         
         function setLanguage(lang) {
-            currentLanguage = lang;
-            
-            // Update active tab styling
-            document.querySelectorAll('.lang-tab').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            if (lang === 'en') {
-                document.querySelector('.lang-tab:first-child').classList.add('active');
-            } else {
-                document.querySelector('.lang-tab:last-child').classList.add('active');
-            }
-            
-            // Update UI text
-            const t = translations[lang];
-            document.getElementById('subtitle').textContent = t.subtitle;
-            document.getElementById('question').placeholder = t.placeholder;
-            document.getElementById('askBtn').textContent = t.askButton;
-            
-            // Update sample questions
-            const sampleContainer = document.getElementById('sampleQuestions');
-            sampleContainer.innerHTML = '';
-            t.sampleQuestions.forEach(sq => {
-                const btn = document.createElement('button');
-                btn.className = 'sample-btn';
-                btn.textContent = sq.text;
-                btn.onclick = () => setQuestion(sq.question);
-                sampleContainer.appendChild(btn);
-            });
-        }
+    currentLanguage = lang;
+    
+    // Update active tab styling
+    document.querySelectorAll('.lang-tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    if (lang === 'en') {
+        document.querySelector('.lang-tab:first-child').classList.add('active');
+    } else if (lang === 'hi') {
+        document.querySelector('.lang-tab:nth-child(2)').classList.add('active');
+    } else {
+        document.querySelector('.lang-tab:last-child').classList.add('active');
+    }
+    
+    // Update UI text
+    const t = translations[lang];
+    document.getElementById('subtitle').textContent = t.subtitle;
+    document.getElementById('question').placeholder = t.placeholder;
+    document.getElementById('askBtn').textContent = t.askButton;
+    
+    // Update sample questions
+    const sampleContainer = document.getElementById('sampleQuestions');
+    sampleContainer.innerHTML = '';
+    t.sampleQuestions.forEach(sq => {
+        const btn = document.createElement('button');
+        btn.className = 'sample-btn';
+        btn.textContent = sq.text;
+        btn.onclick = () => setQuestion(sq.question);
+        sampleContainer.appendChild(btn);
+    });
+}
         
         function setQuestion(text) {
             document.getElementById('question').value = text;
