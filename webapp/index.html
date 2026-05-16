@@ -11,7 +11,7 @@
             box-sizing: border-box;
         }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans', sans-serif;
             background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
             min-height: 100vh;
             padding: 20px;
@@ -40,9 +40,36 @@
         }
         .subtitle {
             color: #666;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
             border-left: 4px solid #ffd700;
             padding-left: 15px;
+        }
+        /* Language Tabs */
+        .language-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 10px;
+        }
+        .lang-tab {
+            padding: 8px 20px;
+            background: none;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 20px;
+            transition: all 0.3s;
+        }
+        .lang-tab.active {
+            background: #2a5298;
+            color: white;
+        }
+        .lang-tab:hover:not(.active) {
+            background: #e8e8e8;
+        }
+        .question-area {
+            display: block;
         }
         textarea {
             width: 100%;
@@ -131,6 +158,7 @@
             padding: 8px 15px;
             font-size: 12px;
             margin-top: 0;
+            border-radius: 20px;
         }
         .sample-btn:hover {
             background: #d0d0d0;
@@ -143,23 +171,31 @@
             <img src="/static/ambedkar-profile.jpg" alt="Dr. B.R. Ambedkar" class="title-image" onerror="this.style.display='none'">
             Dr. B.R. Ambedkar AI
         </h1>
-        <div class="subtitle">Ask questions based on his writings, speeches, and parliamentary debates</div>
+        <div class="subtitle" id="subtitle">Ask questions based on his writings, speeches, and parliamentary debates</div>
         
-        <textarea id="question" rows="4" placeholder="Example: What is your view on the caste system?"></textarea>
-        
-        <div class="sample-questions">
-            <button class="sample-btn" onclick="setQuestion('What is your view on the caste system?')">📜 Caste System</button>
-            <button class="sample-btn" onclick="setQuestion('Why is education important?')">📚 Education</button>
-            <button class="sample-btn" onclick="setQuestion('What is your message to young people?')">💬 Message to Youth</button>
-            <button class="sample-btn" onclick="setQuestion('What is social justice?')">⚖️ Social Justice</button>
+        <!-- Language Tabs -->
+        <div class="language-tabs">
+            <button class="lang-tab active" onclick="setLanguage('en')">🇬🇧 English</button>
+            <button class="lang-tab" onclick="setLanguage('hi')">🇮🇳 हिन्दी</button>
         </div>
         
-        <button onclick="askQuestion()">Ask Dr. Ambedkar</button>
+        <div class="question-area">
+            <textarea id="question" rows="4" placeholder="Example: What is your view on the caste system?"></textarea>
+            
+            <div class="sample-questions" id="sampleQuestions">
+                <button class="sample-btn" onclick="setQuestion('What is your view on the caste system?')">📜 Caste System</button>
+                <button class="sample-btn" onclick="setQuestion('Why is education important?')">📚 Education</button>
+                <button class="sample-btn" onclick="setQuestion('What is your message to young people?')">💬 Message to Youth</button>
+                <button class="sample-btn" onclick="setQuestion('What is social justice?')">⚖️ Social Justice</button>
+            </div>
+            
+            <button onclick="askQuestion()" id="askBtn">Ask Dr. Ambedkar</button>
+        </div>
         
         <div id="thinkingIndicator" class="thinking-container">
             <img src="/static/ambedkar-profile.jpg" alt="Dr. B.R. Ambedkar" class="thinking-image" onerror="this.style.display='none'">
-            <div class="thinking-dots">Dr. Ambedkar is reflecting on your question<span>.</span><span>.</span><span>.</span></div>
-            <div class="thinking-subtitle">Drawing from his writings and speeches...</div>
+            <div class="thinking-dots" id="thinkingText">Dr. Ambedkar is reflecting on your question<span>.</span><span>.</span><span>.</span></div>
+            <div class="thinking-subtitle" id="thinkingSubtitle">Drawing from his writings and speeches...</div>
         </div>
         
         <div id="response"></div>
@@ -168,6 +204,68 @@
 
     <script>
         const API_URL = 'http://13.206.144.244:8000';
+        let currentLanguage = 'en';
+        
+        // Language-specific content
+        const translations = {
+            en: {
+                subtitle: "Ask questions based on his writings, speeches, and parliamentary debates",
+                placeholder: "Example: What is your view on the caste system?",
+                askButton: "Ask Dr. Ambedkar",
+                thinking: "Dr. Ambedkar is reflecting on your question",
+                thinkingSub: "Drawing from his writings and speeches...",
+                sampleQuestions: [
+                    { text: "📜 Caste System", question: "What is your view on the caste system?" },
+                    { text: "📚 Education", question: "Why is education important?" },
+                    { text: "💬 Message to Youth", question: "What is your message to young people?" },
+                    { text: "⚖️ Social Justice", question: "What is social justice?" }
+                ]
+            },
+            hi: {
+                subtitle: "डॉ. बाबासाहेब अंबेडकर के लेखन, भाषणों और संसदीय बहसों पर आधारित प्रश्न पूछें",
+                placeholder: "उदाहरण: जाति व्यवस्था पर आपके क्या विचार हैं?",
+                askButton: "डॉ. अंबेडकर से पूछें",
+                thinking: "डॉ. अंबेडकर आपके प्रश्न पर विचार कर रहे हैं",
+                thinkingSub: "उनके लेखन और भाषणों से...",
+                sampleQuestions: [
+                    { text: "📜 जाति व्यवस्था", question: "जाति व्यवस्था पर आपके क्या विचार हैं?" },
+                    { text: "📚 शिक्षा", question: "शिक्षा क्यों महत्वपूर्ण है?" },
+                    { text: "💬 युवाओं के लिए संदेश", question: "युवाओं के लिए आपका क्या संदेश है?" },
+                    { text: "⚖️ सामाजिक न्याय", question: "सामाजिक न्याय क्या है?" }
+                ]
+            }
+        };
+        
+        function setLanguage(lang) {
+            currentLanguage = lang;
+            
+            // Update active tab styling
+            document.querySelectorAll('.lang-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            if (lang === 'en') {
+                document.querySelector('.lang-tab:first-child').classList.add('active');
+            } else {
+                document.querySelector('.lang-tab:last-child').classList.add('active');
+            }
+            
+            // Update UI text
+            const t = translations[lang];
+            document.getElementById('subtitle').textContent = t.subtitle;
+            document.getElementById('question').placeholder = t.placeholder;
+            document.getElementById('askBtn').textContent = t.askButton;
+            
+            // Update sample questions
+            const sampleContainer = document.getElementById('sampleQuestions');
+            sampleContainer.innerHTML = '';
+            t.sampleQuestions.forEach(sq => {
+                const btn = document.createElement('button');
+                btn.className = 'sample-btn';
+                btn.textContent = sq.text;
+                btn.onclick = () => setQuestion(sq.question);
+                sampleContainer.appendChild(btn);
+            });
+        }
         
         function setQuestion(text) {
             document.getElementById('question').value = text;
@@ -175,6 +273,9 @@
         }
         
         function showThinking() {
+            const t = translations[currentLanguage];
+            document.getElementById('thinkingText').innerHTML = t.thinking + '<span>.</span><span>.</span><span>.</span>';
+            document.getElementById('thinkingSubtitle').textContent = t.thinkingSub;
             document.getElementById('thinkingIndicator').style.display = 'block';
             document.getElementById('response').innerHTML = '';
         }
@@ -188,7 +289,7 @@
             const responseDiv = document.getElementById('response');
             
             if (!question) {
-                responseDiv.innerHTML = '<span style="color: red;">❌ Please enter a question.</span>';
+                responseDiv.innerHTML = '<span style="color: red;">❌ ' + (currentLanguage === 'en' ? 'Please enter a question.' : 'कृपया एक प्रश्न दर्ज करें।') + '</span>';
                 return;
             }
             
@@ -203,7 +304,7 @@
                     body: JSON.stringify({ 
                         question: question, 
                         session_id: "web_" + Date.now(),
-                        language: "en"
+                        language: currentLanguage
                     })
                 });
                 
@@ -226,6 +327,9 @@
                 askQuestion();
             }
         });
+        
+        // Initialize with English
+        setLanguage('en');
     </script>
 </body>
 </html>
