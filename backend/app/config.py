@@ -26,3 +26,8 @@ if Config.ANTHROPIC_API_KEY:
     print(f"✅ Claude API key loaded (starts with: {Config.ANTHROPIC_API_KEY[:15]}...)")
 else:
     print("⚠️  No Claude API key found. Please add ANTHROPIC_API_KEY to .env file")
+
+    # JWT
+    JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "your-secret-key-change-this")
+    JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
+    JWT_EXPIRY_MINUTES = int(os.getenv("JWT_EXPIRY_MINUTES", "1440"))

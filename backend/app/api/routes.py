@@ -64,3 +64,6 @@ def get_stats():
         "status": "active",
         "active_sessions": len(chat_service.conversation_memory)
     }
+# Add auth routes
+from app.api.auth_routes import router as auth_router
+router.include_router(auth_router)
