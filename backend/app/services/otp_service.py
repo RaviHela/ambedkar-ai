@@ -49,7 +49,7 @@ class OTPService:
     def generate_otp(self) -> str:
         return f"{random.randint(100000, 999999)}"
     
-    def send_otp(self, email: str, first_name: str, last_name: str, phone_number: str, pincode: str = "") -> bool:
+    def send_otp(self, email: str, first_name: str, last_name: str, phone_number: str, pincode: str = "", date_of_birth: str = "") -> bool:
         otp = self.generate_otp()
         now = datetime.now()
         
@@ -65,12 +65,14 @@ class OTPService:
             'first_name': first_name,
             'last_name': last_name,
             'phone_number': phone_number,
-            'pincode': pincode
+            'pincode': pincode,
+            'date_of_birth': date_of_birth
         }
         
         sent = self.email_service.send_otp(email, otp)
-        print(f"📧 Email OTP for {email}: {otp}")
+        print(f"📧 OTP for {email}: {otp}")
         print(f"📝 Registration data: {first_name} {last_name}, Phone: {phone_number}")
+        
         return sent
     
     def resend_otp(self, email: str) -> bool:
@@ -119,7 +121,7 @@ class OTPService:
         stored = self.otp_store.get(email)
         return stored.get('verified', False) if stored else False
     
-    def complete_registration(self, email: str, password: str, first_name: str, last_name: str, phone_number: str, pincode: str = "") -> Optional[Dict]:
+    def complete_registration(self, email: str, password: str, first_name: str, last_name: str, phone_number: str, pincode: str = "", date_of_birth: str = "") -> Optional[Dict]:
         temp_data = self.temp_registration_store.get(email)
         if not temp_data:
             return None
@@ -135,6 +137,7 @@ class OTPService:
             'phone_number': phone_number,
             'password_hash': hashed_password,
             'pincode': pincode,
+            'date_of_birth': date_of_birth,
             'created_at': datetime.now().isoformat(),
             'total_questions': 0
         }
@@ -142,7 +145,8 @@ class OTPService:
         self.users_table.put_item(Item=user)
         print(f"✅ User created: {user_id} ({first_name} {last_name})")
         
-        # Clean up
+        self.email_service.send_welcome_email(email, first_name)
+        
         if email in self.temp_registration_store:
             del self.temp_registration_store[email]
         if email in self.otp_store:
