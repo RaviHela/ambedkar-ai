@@ -17,3 +17,5 @@ docs/*.pdf
 create_documentation.py
 *.tar.gz
 backend/chroma_db_*.tar.gz
+._*
+*.DS_Store
