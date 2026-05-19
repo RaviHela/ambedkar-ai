@@ -1,8 +1,11 @@
 import anthropic
 import boto3
+import json
+import os
+import uuid
 from datetime import datetime
-from collections import defaultdict
 from typing import List, Dict, Optional
+from collections import defaultdict
 from app.config import Config
 from app.services.vector_store import VectorStoreManager
 from app.models.persona_manager import PersonaManager
@@ -15,8 +18,13 @@ class ChatService:
         self.max_memory_length = 10
         self.claude_client = None
         
-        # Initialize DynamoDB (using IAM role, no keys needed)
-        self.dynamodb = boto3.resource('dynamodb', region_name='ap-south-1')
+        # Initialize DynamoDB for tracking
+        self.dynamodb = boto3.resource(
+            'dynamodb',
+            region_name=Config.AWS_REGION,
+            aws_access_key_id=Config.AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=Config.AWS_SECRET_ACCESS_KEY
+        )
         self.questions_table = None
         self._init_tables()
         
@@ -48,9 +56,10 @@ class ChatService:
             print("📋 Questions table already exists")
     
     def track_user_question(self, user_id: str, question: str, response: str, session_id: str):
-        """Track user questions in DynamoDB"""
+        """Track user questions and responses in DynamoDB"""
         if not self.questions_table:
             return
+        
         try:
             self.questions_table.put_item(
                 Item={
@@ -58,10 +67,12 @@ class ChatService:
                     'timestamp': datetime.now().isoformat(),
                     'question': question[:1000],
                     'response': response[:1000],
-                    'session_id': session_id
+                    'session_id': session_id,
+                    'question_length': len(question),
+                    'response_length': len(response)
                 }
             )
-            # Update user's question count
+            # Update user's total question count
             users_table = self.dynamodb.Table('ambedkar_users')
             users_table.update_item(
                 Key={'user_id': user_id},
@@ -76,6 +87,8 @@ class ChatService:
                           session_id: str = "default", 
                           language: str = "en", 
                           chat_history: Optional[List[Dict]] = None) -> Dict:
+        
+        print(f"👤 User {user_id[:8]}... asked: {question[:100]}...")
         
         retrieved_docs = self.vector_store.search(question, k=5)
         
@@ -98,6 +111,7 @@ class ChatService:
         
         self._add_to_memory(session_id, question, response_text)
         
+        # Track the question and response (only for authenticated users)
         if user_id != "anonymous":
             self.track_user_question(user_id, question, response_text, session_id)
         

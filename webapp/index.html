@@ -5,13 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
             min-height: 100vh;
             padding: 20px;
@@ -24,1172 +20,565 @@
             padding: 30px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
         }
-        h1 {
-            color: #1e3c72;
-            margin-bottom: 10px;
-            font-size: 28px;
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #ffd700;
+        }
+        .header h1 {
             display: flex;
             align-items: center;
             gap: 15px;
-        }
-        .title-image {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            object-fit: cover;
-        }
-        .subtitle {
-            color: #666;
-            margin-bottom: 20px;
-            border-left: 4px solid #ffd700;
-            padding-left: 15px;
-        }
-        /* Language Tabs */
-        .language-tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #e0e0e0;
-            padding-bottom: 10px;
-        }
-        .lang-tab {
-            padding: 10px 24px;
-            background: #e8e8e8;
-            color: #333;
-            border: none;
-            font-size: 16px;
-            font-weight: 500;
-            cursor: pointer;
-            border-radius: 30px;
-            transition: all 0.3s;
-        }
-        .lang-tab.active {
-            background: #2a5298;
-            color: white;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-        }
-        .lang-tab:hover:not(.active) {
-            background: #d0d0d0;
-            transform: translateY(-1px);
-        }
-        /* Modal Styles */
-        .modal {
-            display: flex;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.7);
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-        .modal-content {
-            background: white;
-            padding: 30px;
-            border-radius: 20px;
-            max-width: 400px;
-            width: 90%;
-            text-align: center;
-        }
-        .modal-content h2 {
-            margin-bottom: 20px;
-            color: #1e3c72;
-        }
-        .modal-content input {
-            width: 100%;
-            padding: 12px;
-            margin: 10px 0;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 16px;
-        }
-        .modal-content button {
-            background: #2a5298;
-            color: white;
-            padding: 12px 20px;
-            border: none;
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 16px;
-            margin-top: 10px;
-            width: 100%;
-        }
-        .modal-content button:hover {
-            background: #1e3c72;
-        }
-        .error {
-            color: red;
-            font-size: 12px;
-            margin-top: 5px;
-        }
-        .success {
-            color: green;
-            font-size: 12px;
-            margin-top: 5px;
-        }
-        .hidden {
-            display: none;
-        }
-        .user-info {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding: 10px;
-            background: #e8e8e8;
-            border-radius: 10px;
-        }
-        .logout-btn {
-            background: #f44336;
-            padding: 5px 15px;
-            border-radius: 20px;
-            color: white;
-            cursor: pointer;
-            border: none;
-        }
-        textarea {
-            width: 100%;
-            padding: 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 16px;
-            font-family: inherit;
-            resize: vertical;
-        }
-        textarea:focus {
-            outline: none;
-            border-color: #2a5298;
-        }
-        button {
-            background: #2a5298;
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            border-radius: 25px;
-            font-size: 16px;
-            cursor: pointer;
-            margin-top: 15px;
-        }
-        button:hover {
-            background: #1e3c72;
-        }
-        #response {
-            background: #f5f5f5;
-            padding: 20px;
-            border-radius: 10px;
-            margin-top: 25px;
-            white-space: pre-wrap;
-            line-height: 1.6;
-            font-size: 15px;
-        }
-        .thinking-container {
-            text-align: center;
-            padding: 20px;
-            display: none;
-            background: #f5f5f5;
-            border-radius: 10px;
-            margin-top: 20px;
-        }
-        .thinking-image {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            object-fit: cover;
-            margin-bottom: 15px;
-            animation: gentlePulse 1.5s ease-in-out infinite;
-        }
-        @keyframes gentlePulse {
-            0% { opacity: 0.6; transform: scale(0.98); box-shadow: 0 0 0 0 rgba(42, 82, 152, 0.4); }
-            50% { opacity: 1; transform: scale(1.02); box-shadow: 0 0 0 15px rgba(42, 82, 152, 0); }
-            100% { opacity: 0.6; transform: scale(0.98); box-shadow: 0 0 0 0 rgba(42, 82, 152, 0); }
-        }
-        .thinking-dots {
-            font-style: italic;
-            color: #666;
-            font-size: 16px;
-            margin-top: 10px;
-        }
-        .thinking-subtitle {
-            font-size: 12px;
-            color: #999;
-            margin-top: 5px;
-        }
-        .footer {
-            margin-top: 25px;
-            font-size: 12px;
-            color: #999;
-            text-align: center;
-            border-top: 1px solid #eee;
-            padding-top: 20px;
-        }
-        .sample-questions {
-            margin-top: 15px;
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-        .sample-btn {
-            background: #e8e8e8;
-            color: #333;
-            padding: 8px 15px;
-            font-size: 12px;
-            margin-top: 0;
-            border-radius: 20px;
-        }
-        .sample-btn:hover {
-            background: #d0d0d0;
-        }
-    </style>
-</head>
-<body>
-    <div class="container" id="app">
-        <h1>
-            <img src="/static/ambedkar-profile.jpg" alt="Dr. B.R. Ambedkar" class="title-image" onerror="this.style.display='none'">
-            Dr. B.R. Ambedkar AI
-        </h1>
-        
-        <div id="userInfo" class="user-info hidden">
-            <span id="userName"></span>
-            <button class="logout-btn" onclick="logout()">Logout</button>
-        </div>
-        
-        <div class="subtitle" id="subtitle">Ask questions based on his writings, speeches, and parliamentary debates</div>
-        
-        <div class="language-tabs">
-            <button class="lang-tab active" onclick="setLanguage('en')">English</button>
-            <button class="lang-tab" onclick="setLanguage('hi')">हिन्दी</button>
-            <button class="lang-tab" onclick="setLanguage('bn')">বাংলা</button>
-        </div>
-        
-        <div class="question-area">
-            <textarea id="question" rows="4" placeholder="Example: What is your view on the caste system?"></textarea>
-            
-            <div class="sample-questions" id="sampleQuestions"></div>
-            
-            <button onclick="askQuestion()" id="askBtn">Ask Dr. Ambedkar</button>
-        </div>
-        
-        <div id="thinkingIndicator" class="thinking-container">
-            <img src="/static/ambedkar-profile.jpg" alt="Dr. B.R. Ambedkar" class="thinking-image">
-            <div class="thinking-dots" id="thinkingText">Dr. Ambedkar is reflecting on your question<span>.</span><span>.</span><span>.</span></div>
-            <div class="thinking-subtitle" id="thinkingSubtitle">Drawing from his writings and speeches...</div>
-        </div>
-        
-        <div id="response"></div>
-        <div class="footer">Based on Dr. B.R. Ambedkar's collected writings • Cloud-hosted on AWS</div>
-    </div>
-
-    <!-- Sign In Modal -->
-    <div id="signinModal" class="modal">
-        <div class="modal-content">
-            <h2>Welcome to Dr. B.R. Ambedkar AI</h2>
-            <p>Please sign in to continue</p>
-            
-            <div id="step1">
-                <input type="tel" id="phoneNumber" placeholder="Phone Number (e.g., +919876543210)">
-                <button onclick="sendOTP()">Send OTP</button>
-            </div>
-            
-            <div id="step2" style="display:none;">
-                <input type="text" id="otp" placeholder="Enter OTP">
-                <button onclick="verifyOTP()">Verify OTP</button>
-            </div>
-            
-            <div id="step3" style="display:none;">
-                <input type="text" id="firstName" placeholder="First Name">
-                <input type="text" id="lastName" placeholder="Last Name">
-                <button onclick="completeRegistration()">Complete Registration</button>
-            </div>
-            
-            <div id="errorMsg" class="error"></div>
-        </div>
-    </div>
-
-    <script>
-        const API_URL = "";
-        let currentLanguage = 'en';
-        let verifiedPhone = '';
-        let authToken = localStorage.getItem('authToken');
-        
-        // Check if user is already logged in
-        if (authToken) {
-            document.getElementById('signinModal').style.display = 'none';
-            fetchUserInfo();
-        }
-        
-        async function sendOTP() {
-            const phone = document.getElementById('phoneNumber').value;
-            const errorDiv = document.getElementById('errorMsg');
-            
-            if (!phone) {
-                errorDiv.textContent = 'Please enter phone number';
-                return;
-            }
-            
-            try {
-                const response = await fetch(`${API_URL}/api/v1/auth/send-otp`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ phone_number: phone })
-                });
-                
-                if (response.ok) {
-                    verifiedPhone = phone;
-                    document.getElementById('step1').style.display = 'none';
-                    document.getElementById('step2').style.display = 'block';
-                    errorDiv.textContent = 'OTP sent! Check server logs for the code.';
-                } else {
-                    errorDiv.textContent = 'Failed to send OTP';
-                }
-            } catch (error) {
-                errorDiv.textContent = 'Error: ' + error.message;
-            }
-        }
-        
-        async function verifyOTP() {
-            const otp = document.getElementById('otp').value;
-            const errorDiv = document.getElementById('errorMsg');
-            
-            try {
-                const response = await fetch(`${API_URL}/api/v1/auth/verify-otp`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ phone_number: verifiedPhone, otp: otp })
-                });
-                
-                if (response.ok) {
-                    document.getElementById('step2').style.display = 'none';
-                    document.getElementById('step3').style.display = 'block';
-                    errorDiv.textContent = 'OTP verified! Please complete registration.';
-                } else {
-                    errorDiv.textContent = 'Invalid OTP';
-                }
-            } catch (error) {
-                errorDiv.textContent = 'Error: ' + error.message;
-            }
-        }
-        
-        async function completeRegistration() {
-            const firstName = document.getElementById('firstName').value;
-            const lastName = document.getElementById('lastName').value;
-            const errorDiv = document.getElementById('errorMsg');
-            
-            if (!firstName || !lastName) {
-                errorDiv.textContent = 'Please enter both first and last name';
-                return;
-            }
-            
-            try {
-                const response = await fetch(`${API_URL}/api/v1/auth/register`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        phone_number: verifiedPhone, 
-                        first_name: firstName, 
-                        last_name: lastName 
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (response.ok && data.access_token) {
-                    authToken = data.access_token;
-                    localStorage.setItem('authToken', authToken);
-                    document.getElementById('signinModal').style.display = 'none';
-                    document.getElementById('userInfo').classList.remove('hidden');
-                    document.getElementById('userName').textContent = `Welcome, ${firstName} ${lastName}!`;
-                    errorDiv.textContent = '';
-                } else {
-                    errorDiv.textContent = data.detail || 'Registration failed';
-                }
-            } catch (error) {
-                errorDiv.textContent = 'Error: ' + error.message;
-            }
-        }
-        
-        async function fetchUserInfo() {
-            try {
-                const response = await fetch(`${API_URL}/api/v1/auth/me`, {
-                    headers: { 'Authorization': `Bearer ${authToken}` }
-                });
-                
-                if (response.ok) {
-                    const user = await response.json();
-                    document.getElementById('userName').textContent = `Welcome, ${user.first_name} ${user.last_name}!`;
-                    document.getElementById('userInfo').classList.remove('hidden');
-                } else {
-                    logout();
-                }
-            } catch (error) {
-                logout();
-            }
-        }
-        
-        function logout() {
-            localStorage.removeItem('authToken');
-            authToken = null;
-            document.getElementById('signinModal').style.display = 'flex';
-            document.getElementById('userInfo').classList.add('hidden');
-            document.getElementById('step1').style.display = 'block';
-            document.getElementById('step2').style.display = 'none';
-            document.getElementById('step3').style.display = 'none';
-            document.getElementById('phoneNumber').value = '';
-            document.getElementById('otp').value = '';
-            document.getElementById('firstName').value = '';
-            document.getElementById('lastName').value = '';
-        }
-        
-        // Language-specific content
-        const translations = {
-            en: {
-                subtitle: "Ask questions based on his writings, speeches, and parliamentary debates",
-                placeholder: "Example: What is your view on the caste system?",
-                askButton: "Ask Dr. Ambedkar",
-                thinking: "Dr. Ambedkar is reflecting on your question",
-                thinkingSub: "Drawing from his writings and speeches...",
-                sampleQuestions: [
-                    { text: "📜 Caste System", question: "What is your view on the caste system?" },
-                    { text: "📚 Education", question: "Why is education important?" },
-                    { text: "💬 Message to Youth", question: "What is your message to young people?" },
-                    { text: "⚖️ Social Justice", question: "What is social justice?" }
-                ]
-            },
-            hi: {
-                subtitle: "डॉ. बाबासाहेब अंबेडकर के लेखन, भाषणों और संसदीय बहसों पर आधारित प्रश्न पूछें",
-                placeholder: "उदाहरण: जाति व्यवस्था पर आपके क्या विचार हैं?",
-                askButton: "डॉ. अंबेडकर से पूछें",
-                thinking: "डॉ. अंबेडकर आपके प्रश्न पर विचार कर रहे हैं",
-                thinkingSub: "उनके लेखन और भाषणों से...",
-                sampleQuestions: [
-                    { text: "📜 जाति व्यवस्था", question: "जाति व्यवस्था पर आपके क्या विचार हैं?" },
-                    { text: "📚 शिक्षा", question: "शिक्षा क्यों महत्वपूर्ण है?" },
-                    { text: "💬 युवाओं के लिए संदेश", question: "युवाओं के लिए आपका क्या संदेश है?" },
-                    { text: "⚖️ सामाजिक न्याय", question: "सामाजिक न्याय क्या है?" }
-                ]
-            },
-            bn: {
-                subtitle: "ডঃ বি.আর. আম্বেদকরের লেখা, বক্তৃতা এবং সংসদীয় বিতর্কের ভিত্তিতে প্রশ্ন করুন",
-                placeholder: "উদাহরণ: জাত ব্যবস্থা সম্পর্কে আপনার দৃষ্টিভঙ্গি কী?",
-                askButton: "ডঃ আম্বেদকরকে জিজ্ঞাসা করুন",
-                thinking: "ডঃ আম্বেদকর আপনার প্রশ্নটি নিয়ে চিন্তা করছেন",
-                thinkingSub: "তাঁর লেখা এবং বক্তৃতা থেকে...",
-                sampleQuestions: [
-                    { text: "📜 জাত ব্যবস্থা", question: "জাত ব্যবস্থা সম্পর্কে আপনার দৃষ্টিভঙ্গি কী?" },
-                    { text: "📚 শিক্ষা", question: "শিক্ষা কেন গুরুত্বপূর্ণ?" },
-                    { text: "💬 যুবকদের জন্য বার্তা", question: "যুবকদের জন্য আপনার বার্তা কী?" },
-                    { text: "⚖️ সামাজিক ন্যায়বিচার", question: "সামাজিক ন্যায়বিচার কী?" }
-                ]
-            }
-        };
-        
-        function setLanguage(lang) {
-            currentLanguage = lang;
-            
-            document.querySelectorAll('.lang-tab').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            if (lang === 'en') {
-                document.querySelector('.lang-tab:first-child').classList.add('active');
-            } else if (lang === 'hi') {
-                document.querySelector('.lang-tab:nth-child(2)').classList.add('active');
-            } else {
-                document.querySelector('.lang-tab:last-child').classList.add('active');
-            }
-            
-            const t = translations[lang];
-            document.getElementById('subtitle').textContent = t.subtitle;
-            document.getElementById('question').placeholder = t.placeholder;
-            document.getElementById('askBtn').textContent = t.askButton;
-            
-            const sampleContainer = document.getElementById('sampleQuestions');
-            sampleContainer.innerHTML = '';
-            t.sampleQuestions.forEach(sq => {
-                const btn = document.createElement('button');
-                btn.className = 'sample-btn';
-                btn.textContent = sq.text;
-                btn.onclick = () => setQuestion(sq.question);
-                sampleContainer.appendChild(btn);
-            });
-        }
-        
-        function setQuestion(text) {
-            document.getElementById('question').value = text;
-            askQuestion();
-        }
-        
-        function showThinking() {
-            const t = translations[currentLanguage];
-            document.getElementById('thinkingText').innerHTML = t.thinking + '<span>.</span><span>.</span><span>.</span>';
-            document.getElementById('thinkingSubtitle').textContent = t.thinkingSub;
-            document.getElementById('thinkingIndicator').style.display = 'block';
-            document.getElementById('response').innerHTML = '';
-        }
-        
-        function hideThinking() {
-            document.getElementById('thinkingIndicator').style.display = 'none';
-        }
-        
-        async function askQuestion() {
-            if (!authToken) {
-                document.getElementById('signinModal').style.display = 'flex';
-                return;
-            }
-            
-            const question = document.getElementById('question').value.trim();
-            const responseDiv = document.getElementById('response');
-            
-            if (!question) {
-                responseDiv.innerHTML = '<span style="color: red;">❌ ' + (currentLanguage === 'en' ? 'Please enter a question.' : 'कृपया एक प्रश्न दर्ज करें।') + '</span>';
-                return;
-            }
-            
-            showThinking();
-            
-            try {
-                const response = await fetch(`${API_URL}/api/v1/chat`, {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${authToken}`
-                    },
-                    body: JSON.stringify({ 
-                        question: question, 
-                        session_id: "web_" + Date.now(),
-                        language: currentLanguage
-                    })
-                });
-                
-                if (response.status === 401) {
-                    logout();
-                    hideThinking();
-                    responseDiv.innerHTML = '<span style="color: red;">Session expired. Please sign in again.</span>';
-                    return;
-                }
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}`);
-                }
-                
-                const data = await response.json();
-                hideThinking();
-                responseDiv.innerHTML = data.response;
-            } catch (error) {
-                hideThinking();
-                responseDiv.innerHTML = `<span style="color: red;">❌ Error: ${error.message}</span>`;
-            }
-        }
-        
-        document.getElementById('question').addEventListener('keydown', function(e) {
-            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-                askQuestion();
-            }
-        });
-        
-        setLanguage('en');
-        
-        if (!authToken) {
-            document.getElementById('signinModal').style.display = 'flex';
-        }
-    </script>
-</body>
-</html>
-EOFcat > index.html << 'EOF'
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Dr. B.R. Ambedkar AI</title>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        * {
             margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans', sans-serif;
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-        }
-        h1 {
             color: #1e3c72;
-            margin-bottom: 10px;
-            font-size: 28px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
         }
-        .title-image {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            object-fit: cover;
-        }
-        .subtitle {
-            color: #666;
-            margin-bottom: 20px;
-            border-left: 4px solid #ffd700;
-            padding-left: 15px;
-        }
-        /* Language Tabs */
-        .language-tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #e0e0e0;
-            padding-bottom: 10px;
-        }
-        .lang-tab {
-            padding: 10px 24px;
-            background: #e8e8e8;
-            color: #333;
-            border: none;
-            font-size: 16px;
-            font-weight: 500;
-            cursor: pointer;
-            border-radius: 30px;
-            transition: all 0.3s;
-        }
-        .lang-tab.active {
-            background: #2a5298;
-            color: white;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-        }
-        .lang-tab:hover:not(.active) {
-            background: #d0d0d0;
-            transform: translateY(-1px);
-        }
-        /* Modal Styles */
+        .title-image { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid #ffd700; }
+        .subtitle { color: #666; margin-bottom: 20px; border-left: 4px solid #ffd700; padding-left: 15px; }
+        .language-tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px; }
+        .lang-tab { padding: 10px 24px; background: #e8e8e8; color: #333; border: none; font-size: 16px; font-weight: 500; cursor: pointer; border-radius: 30px; }
+        .lang-tab.active { background: #2a5298; color: white; }
+        
         .modal {
-            display: flex;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.7);
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
+            display: flex; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7); justify-content: center; align-items: center; z-index: 1000;
         }
         .modal-content {
-            background: white;
-            padding: 30px;
-            border-radius: 20px;
-            max-width: 400px;
-            width: 90%;
-            text-align: center;
+            background: white; padding: 30px; border-radius: 20px; max-width: 500px; width: 90%;
+            max-height: 90vh; overflow-y: auto;
         }
-        .modal-content h2 {
-            margin-bottom: 20px;
-            color: #1e3c72;
-        }
+        .modal-content h2 { margin-bottom: 20px; color: #1e3c72; text-align: center; }
         .modal-content input {
-            width: 100%;
-            padding: 12px;
-            margin: 10px 0;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 16px;
+            width: 100%; padding: 12px; margin: 10px 0; border: 2px solid #e0e0e0;
+            border-radius: 10px; font-size: 16px;
         }
         .modal-content button {
-            background: #2a5298;
-            color: white;
-            padding: 12px 20px;
-            border: none;
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 16px;
-            margin-top: 10px;
-            width: 100%;
+            background: #2a5298; color: white; padding: 12px 20px; border: none;
+            border-radius: 25px; cursor: pointer; font-size: 16px; margin-top: 10px; width: 100%;
         }
-        .modal-content button:hover {
-            background: #1e3c72;
-        }
-        .error {
-            color: red;
-            font-size: 12px;
-            margin-top: 5px;
-        }
-        .success {
-            color: green;
-            font-size: 12px;
-            margin-top: 5px;
-        }
-        .hidden {
-            display: none;
-        }
-        .user-info {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding: 10px;
-            background: #e8e8e8;
-            border-radius: 10px;
-        }
-        .logout-btn {
-            background: #f44336;
-            padding: 5px 15px;
-            border-radius: 20px;
-            color: white;
-            cursor: pointer;
-            border: none;
-        }
-        textarea {
-            width: 100%;
-            padding: 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 16px;
-            font-family: inherit;
-            resize: vertical;
-        }
-        textarea:focus {
-            outline: none;
-            border-color: #2a5298;
-        }
-        button {
-            background: #2a5298;
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            border-radius: 25px;
-            font-size: 16px;
-            cursor: pointer;
-            margin-top: 15px;
-        }
-        button:hover {
-            background: #1e3c72;
-        }
-        #response {
-            background: #f5f5f5;
-            padding: 20px;
-            border-radius: 10px;
-            margin-top: 25px;
-            white-space: pre-wrap;
-            line-height: 1.6;
-            font-size: 15px;
-        }
-        .thinking-container {
-            text-align: center;
-            padding: 20px;
-            display: none;
-            background: #f5f5f5;
-            border-radius: 10px;
-            margin-top: 20px;
-        }
-        .thinking-image {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            object-fit: cover;
-            margin-bottom: 15px;
-            animation: gentlePulse 1.5s ease-in-out infinite;
-        }
-        @keyframes gentlePulse {
-            0% { opacity: 0.6; transform: scale(0.98); box-shadow: 0 0 0 0 rgba(42, 82, 152, 0.4); }
-            50% { opacity: 1; transform: scale(1.02); box-shadow: 0 0 0 15px rgba(42, 82, 152, 0); }
-            100% { opacity: 0.6; transform: scale(0.98); box-shadow: 0 0 0 0 rgba(42, 82, 152, 0); }
-        }
-        .thinking-dots {
-            font-style: italic;
-            color: #666;
-            font-size: 16px;
-            margin-top: 10px;
-        }
-        .thinking-subtitle {
-            font-size: 12px;
-            color: #999;
-            margin-top: 5px;
-        }
-        .footer {
-            margin-top: 25px;
-            font-size: 12px;
-            color: #999;
-            text-align: center;
-            border-top: 1px solid #eee;
-            padding-top: 20px;
-        }
-        .sample-questions {
-            margin-top: 15px;
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-        .sample-btn {
-            background: #e8e8e8;
-            color: #333;
-            padding: 8px 15px;
-            font-size: 12px;
-            margin-top: 0;
-            border-radius: 20px;
-        }
-        .sample-btn:hover {
-            background: #d0d0d0;
-        }
+        .modal-content button:disabled { background: #ccc; cursor: not-allowed; }
+        .auth-tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #e0e0e0; }
+        .auth-tab { flex: 1; padding: 10px; background: none; border: none; font-size: 16px; font-weight: 500; cursor: pointer; color: #666; }
+        .auth-tab.active { color: #2a5298; border-bottom: 3px solid #2a5298; }
+        .auth-form { display: none; }
+        .auth-form.active { display: block; }
+        .reg-step { display: none; }
+        .reg-step.active { display: block; }
+        .step-indicator { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; }
+        .step-dot { width: 30px; height: 30px; border-radius: 50%; background: #e0e0e0; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #666; }
+        .step-dot.active { background: #2a5298; color: white; }
+        .step-dot.completed { background: #4caf50; color: white; }
+        .row { display: flex; gap: 10px; }
+        .row input { flex: 1; }
+        .error { color: red; font-size: 12px; margin-top: 5px; text-align: center; }
+        .success { color: green; font-size: 12px; margin-top: 5px; text-align: center; }
+        .info { color: #2a5298; font-size: 12px; margin-top: 5px; text-align: center; }
+        
+        .user-info { display: flex; align-items: center; gap: 15px; background: #e8e8e8; padding: 8px 15px; border-radius: 25px; }
+        .user-info span { font-weight: 500; color: #1e3c72; }
+        .logout-btn { background: #f44336; padding: 5px 15px; border-radius: 20px; color: white; cursor: pointer; border: none; }
+        .hidden { display: none; }
+        
+        textarea { width: 100%; padding: 15px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 16px; resize: vertical; }
+        .ask-btn { background: #2a5298; color: white; border: none; padding: 12px 30px; border-radius: 25px; font-size: 16px; cursor: pointer; margin-top: 15px; }
+        #response { background: #f5f5f5; padding: 20px; border-radius: 10px; margin-top: 25px; white-space: pre-wrap; line-height: 1.6; }
+        
+        .thinking-container { text-align: center; padding: 30px; display: none; background: #f5f5f5; border-radius: 10px; margin-top: 20px; }
+        .thinking-image { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin-bottom: 15px; animation: gentlePulse 1.5s ease-in-out infinite; }
+        @keyframes gentlePulse { 0% { opacity: 0.6; transform: scale(0.98); } 50% { opacity: 1; transform: scale(1.02); } 100% { opacity: 0.6; transform: scale(0.98); } }
+        
+        .footer { margin-top: 25px; font-size: 12px; color: #999; text-align: center; border-top: 1px solid #eee; padding-top: 20px; }
+        .sample-questions { margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap; }
+        .sample-btn { background: #e8e8e8; color: #333; padding: 8px 15px; font-size: 12px; border-radius: 20px; cursor: pointer; }
     </style>
 </head>
 <body>
-    <div class="container" id="app">
+<div class="container" id="app">
+    <div class="header">
         <h1>
-            <img src="/static/ambedkar-profile.jpg" alt="Dr. B.R. Ambedkar" class="title-image" onerror="this.style.display='none'">
+            <img src="/static/ambedkar-profile.jpg" alt="Dr. B.R. Ambedkar" class="title-image">
             Dr. B.R. Ambedkar AI
         </h1>
-        
         <div id="userInfo" class="user-info hidden">
             <span id="userName"></span>
             <button class="logout-btn" onclick="logout()">Logout</button>
         </div>
-        
-        <div class="subtitle" id="subtitle">Ask questions based on his writings, speeches, and parliamentary debates</div>
-        
-        <div class="language-tabs">
-            <button class="lang-tab active" onclick="setLanguage('en')">English</button>
-            <button class="lang-tab" onclick="setLanguage('hi')">हिन्दी</button>
-            <button class="lang-tab" onclick="setLanguage('bn')">বাংলা</button>
-        </div>
-        
-        <div class="question-area">
-            <textarea id="question" rows="4" placeholder="Example: What is your view on the caste system?"></textarea>
-            
-            <div class="sample-questions" id="sampleQuestions"></div>
-            
-            <button onclick="askQuestion()" id="askBtn">Ask Dr. Ambedkar</button>
-        </div>
-        
-        <div id="thinkingIndicator" class="thinking-container">
-            <img src="/static/ambedkar-profile.jpg" alt="Dr. B.R. Ambedkar" class="thinking-image">
-            <div class="thinking-dots" id="thinkingText">Dr. Ambedkar is reflecting on your question<span>.</span><span>.</span><span>.</span></div>
-            <div class="thinking-subtitle" id="thinkingSubtitle">Drawing from his writings and speeches...</div>
-        </div>
-        
-        <div id="response"></div>
-        <div class="footer">Based on Dr. B.R. Ambedkar's collected writings • Cloud-hosted on AWS</div>
     </div>
+    <div class="subtitle" id="subtitle">Ask questions based on his writings, speeches, and parliamentary debates</div>
+    <div class="language-tabs">
+        <button class="lang-tab active" onclick="setLanguage('en')">English</button>
+        <button class="lang-tab" onclick="setLanguage('hi')">हिन्दी</button>
+        <button class="lang-tab" onclick="setLanguage('bn')">বাংলা</button>
+    </div>
+    <textarea id="question" rows="4" placeholder="Example: What is your view on the caste system?"></textarea>
+    <div class="sample-questions" id="sampleQuestions"></div>
+    <button class="ask-btn" onclick="askQuestion()" id="askBtn">Ask Dr. Ambedkar</button>
+    <div id="thinkingIndicator" class="thinking-container">
+        <img src="/static/ambedkar-profile.jpg" class="thinking-image">
+        <div id="thinkingText">Dr. Ambedkar is reflecting on your question...</div>
+    </div>
+    <div id="response"></div>
+    <div class="footer">Based on Dr. B.R. Ambedkar's collected writings • Cloud-hosted on AWS</div>
+</div>
 
-    <!-- Sign In Modal -->
-    <div id="signinModal" class="modal">
-        <div class="modal-content">
-            <h2>Welcome to Dr. B.R. Ambedkar AI</h2>
-            <p>Please sign in to continue</p>
-            
-            <div id="step1">
-                <input type="tel" id="phoneNumber" placeholder="Phone Number (e.g., +919876543210)">
-                <button onclick="sendOTP()">Send OTP</button>
+<div id="authModal" class="modal" style="display: flex;">
+    <div class="modal-content">
+        <h2>Dr. B.R. Ambedkar AI</h2>
+        <div class="auth-tabs">
+            <button class="auth-tab active" onclick="switchAuthTab('login')">Login</button>
+            <button class="auth-tab" onclick="switchAuthTab('register')">Register</button>
+        </div>
+        
+        <!-- Login Form -->
+        <div id="loginForm" class="auth-form active">
+            <input type="text" id="loginIdentifier" placeholder="Email or Phone Number">
+            <input type="password" id="loginPassword" placeholder="Password">
+            <button onclick="login()">Login</button>
+            <div id="loginError" class="error"></div>
+        </div>
+        
+        <!-- Register Form - Step 1 -->
+        <div id="registerForm" class="auth-form">
+            <div class="step-indicator">
+                <div class="step-dot active" id="step1Dot">1</div>
+                <div class="step-dot" id="step2Dot">2</div>
+                <div class="step-dot" id="step3Dot">3</div>
             </div>
             
-            <div id="step2" style="display:none;">
-                <input type="text" id="otp" placeholder="Enter OTP">
-                <button onclick="verifyOTP()">Verify OTP</button>
+            <div id="step1" class="reg-step active">
+                <p>Step 1: Personal Details</p>
+                <div class="row">
+                    <input type="text" id="regFirstName" placeholder="First Name">
+                    <input type="text" id="regLastName" placeholder="Last Name">
+                </div>
+                <input type="email" id="regEmail" placeholder="Email Address">
+                <div class="row">
+                    <input type="tel" id="regPhone" placeholder="Phone Number (e.g., +919876543210)">
+                    <input type="text" id="regPincode" placeholder="Pincode (Optional)" maxlength="6">
+                </div>
+                <button onclick="sendOTP()" id="sendOtpBtn">Send OTP</button>
+                <div id="step1Error" class="error"></div>
+                <div id="step1Info" class="info"></div>
             </div>
             
-            <div id="step3" style="display:none;">
-                <input type="text" id="firstName" placeholder="First Name">
-                <input type="text" id="lastName" placeholder="Last Name">
-                <button onclick="completeRegistration()">Complete Registration</button>
+            <div id="step2" class="reg-step">
+                <p>Step 2: Verify Email</p>
+                <p class="info" id="otpEmailDisplay"></p>
+                <input type="text" id="otpCode" placeholder="Enter 6-digit OTP" maxlength="6">
+                <button onclick="verifyOTP()" id="verifyOtpBtn">Verify OTP</button>
+                <button onclick="resendOTP()" id="resendOtpBtn" style="background:#666; margin-top:5px;">Resend OTP</button>
+                <div id="step2Error" class="error"></div>
+                <div id="step2Success" class="success"></div>
             </div>
             
-            <div id="errorMsg" class="error"></div>
+            <div id="step3" class="reg-step">
+                <p>Step 3: Create Password</p>
+                <input type="password" id="regPassword" placeholder="Password (min 6 characters)">
+                <input type="password" id="regConfirmPassword" placeholder="Confirm Password">
+                <button onclick="completeRegistration()" id="completeBtn">Complete Registration</button>
+                <div id="step3Error" class="error"></div>
+            </div>
         </div>
     </div>
+</div>
 
-    <script>
-        const API_URL = "";
-        let currentLanguage = 'en';
-        let verifiedPhone = '';
-        let authToken = localStorage.getItem('authToken');
-        
-        // Check if user is already logged in
-        if (authToken) {
-            document.getElementById('signinModal').style.display = 'none';
-            fetchUserInfo();
-        }
-        
-        async function sendOTP() {
-            const phone = document.getElementById('phoneNumber').value;
-            const errorDiv = document.getElementById('errorMsg');
-            
-            if (!phone) {
-                errorDiv.textContent = 'Please enter phone number';
-                return;
-            }
-            
-            try {
-                const response = await fetch(`${API_URL}/api/v1/auth/send-otp`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ phone_number: phone })
-                });
-                
-                if (response.ok) {
-                    verifiedPhone = phone;
-                    document.getElementById('step1').style.display = 'none';
-                    document.getElementById('step2').style.display = 'block';
-                    errorDiv.textContent = 'OTP sent! Check server logs for the code.';
-                } else {
-                    errorDiv.textContent = 'Failed to send OTP';
-                }
-            } catch (error) {
-                errorDiv.textContent = 'Error: ' + error.message;
-            }
-        }
-        
-        async function verifyOTP() {
-            const otp = document.getElementById('otp').value;
-            const errorDiv = document.getElementById('errorMsg');
-            
-            try {
-                const response = await fetch(`${API_URL}/api/v1/auth/verify-otp`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ phone_number: verifiedPhone, otp: otp })
-                });
-                
-                if (response.ok) {
-                    document.getElementById('step2').style.display = 'none';
-                    document.getElementById('step3').style.display = 'block';
-                    errorDiv.textContent = 'OTP verified! Please complete registration.';
-                } else {
-                    errorDiv.textContent = 'Invalid OTP';
-                }
-            } catch (error) {
-                errorDiv.textContent = 'Error: ' + error.message;
-            }
-        }
-        
-        async function completeRegistration() {
-            const firstName = document.getElementById('firstName').value;
-            const lastName = document.getElementById('lastName').value;
-            const errorDiv = document.getElementById('errorMsg');
-            
-            if (!firstName || !lastName) {
-                errorDiv.textContent = 'Please enter both first and last name';
-                return;
-            }
-            
-            try {
-                const response = await fetch(`${API_URL}/api/v1/auth/register`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        phone_number: verifiedPhone, 
-                        first_name: firstName, 
-                        last_name: lastName 
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (response.ok && data.access_token) {
-                    authToken = data.access_token;
-                    localStorage.setItem('authToken', authToken);
-                    document.getElementById('signinModal').style.display = 'none';
-                    document.getElementById('userInfo').classList.remove('hidden');
-                    document.getElementById('userName').textContent = `Welcome, ${firstName} ${lastName}!`;
-                    errorDiv.textContent = '';
-                } else {
-                    errorDiv.textContent = data.detail || 'Registration failed';
-                }
-            } catch (error) {
-                errorDiv.textContent = 'Error: ' + error.message;
-            }
-        }
-        
-        async function fetchUserInfo() {
-            try {
-                const response = await fetch(`${API_URL}/api/v1/auth/me`, {
-                    headers: { 'Authorization': `Bearer ${authToken}` }
-                });
-                
-                if (response.ok) {
-                    const user = await response.json();
-                    document.getElementById('userName').textContent = `Welcome, ${user.first_name} ${user.last_name}!`;
-                    document.getElementById('userInfo').classList.remove('hidden');
-                } else {
-                    logout();
-                }
-            } catch (error) {
-                logout();
-            }
-        }
-        
-        function logout() {
-            localStorage.removeItem('authToken');
-            authToken = null;
-            document.getElementById('signinModal').style.display = 'flex';
-            document.getElementById('userInfo').classList.add('hidden');
-            document.getElementById('step1').style.display = 'block';
-            document.getElementById('step2').style.display = 'none';
-            document.getElementById('step3').style.display = 'none';
-            document.getElementById('phoneNumber').value = '';
-            document.getElementById('otp').value = '';
-            document.getElementById('firstName').value = '';
-            document.getElementById('lastName').value = '';
-        }
-        
-        // Language-specific content
-        const translations = {
-            en: {
-                subtitle: "Ask questions based on his writings, speeches, and parliamentary debates",
-                placeholder: "Example: What is your view on the caste system?",
-                askButton: "Ask Dr. Ambedkar",
-                thinking: "Dr. Ambedkar is reflecting on your question",
-                thinkingSub: "Drawing from his writings and speeches...",
-                sampleQuestions: [
-                    { text: "📜 Caste System", question: "What is your view on the caste system?" },
-                    { text: "📚 Education", question: "Why is education important?" },
-                    { text: "💬 Message to Youth", question: "What is your message to young people?" },
-                    { text: "⚖️ Social Justice", question: "What is social justice?" }
-                ]
-            },
-            hi: {
-                subtitle: "डॉ. बाबासाहेब अंबेडकर के लेखन, भाषणों और संसदीय बहसों पर आधारित प्रश्न पूछें",
-                placeholder: "उदाहरण: जाति व्यवस्था पर आपके क्या विचार हैं?",
-                askButton: "डॉ. अंबेडकर से पूछें",
-                thinking: "डॉ. अंबेडकर आपके प्रश्न पर विचार कर रहे हैं",
-                thinkingSub: "उनके लेखन और भाषणों से...",
-                sampleQuestions: [
-                    { text: "📜 जाति व्यवस्था", question: "जाति व्यवस्था पर आपके क्या विचार हैं?" },
-                    { text: "📚 शिक्षा", question: "शिक्षा क्यों महत्वपूर्ण है?" },
-                    { text: "💬 युवाओं के लिए संदेश", question: "युवाओं के लिए आपका क्या संदेश है?" },
-                    { text: "⚖️ सामाजिक न्याय", question: "सामाजिक न्याय क्या है?" }
-                ]
-            },
-            bn: {
-                subtitle: "ডঃ বি.আর. আম্বেদকরের লেখা, বক্তৃতা এবং সংসদীয় বিতর্কের ভিত্তিতে প্রশ্ন করুন",
-                placeholder: "উদাহরণ: জাত ব্যবস্থা সম্পর্কে আপনার দৃষ্টিভঙ্গি কী?",
-                askButton: "ডঃ আম্বেদকরকে জিজ্ঞাসা করুন",
-                thinking: "ডঃ আম্বেদকর আপনার প্রশ্নটি নিয়ে চিন্তা করছেন",
-                thinkingSub: "তাঁর লেখা এবং বক্তৃতা থেকে...",
-                sampleQuestions: [
-                    { text: "📜 জাত ব্যবস্থা", question: "জাত ব্যবস্থা সম্পর্কে আপনার দৃষ্টিভঙ্গি কী?" },
-                    { text: "📚 শিক্ষা", question: "শিক্ষা কেন গুরুত্বপূর্ণ?" },
-                    { text: "💬 যুবকদের জন্য বার্তা", question: "যুবকদের জন্য আপনার বার্তা কী?" },
-                    { text: "⚖️ সামাজিক ন্যায়বিচার", question: "সামাজিক ন্যায়বিচার কী?" }
-                ]
-            }
-        };
-        
-        function setLanguage(lang) {
-            currentLanguage = lang;
-            
-            document.querySelectorAll('.lang-tab').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            if (lang === 'en') {
-                document.querySelector('.lang-tab:first-child').classList.add('active');
-            } else if (lang === 'hi') {
-                document.querySelector('.lang-tab:nth-child(2)').classList.add('active');
-            } else {
-                document.querySelector('.lang-tab:last-child').classList.add('active');
-            }
-            
-            const t = translations[lang];
-            document.getElementById('subtitle').textContent = t.subtitle;
-            document.getElementById('question').placeholder = t.placeholder;
-            document.getElementById('askBtn').textContent = t.askButton;
-            
-            const sampleContainer = document.getElementById('sampleQuestions');
-            sampleContainer.innerHTML = '';
-            t.sampleQuestions.forEach(sq => {
-                const btn = document.createElement('button');
-                btn.className = 'sample-btn';
-                btn.textContent = sq.text;
-                btn.onclick = () => setQuestion(sq.question);
-                sampleContainer.appendChild(btn);
-            });
-        }
-        
-        function setQuestion(text) {
-            document.getElementById('question').value = text;
-            askQuestion();
-        }
-        
-        function showThinking() {
-            const t = translations[currentLanguage];
-            document.getElementById('thinkingText').innerHTML = t.thinking + '<span>.</span><span>.</span><span>.</span>';
-            document.getElementById('thinkingSubtitle').textContent = t.thinkingSub;
-            document.getElementById('thinkingIndicator').style.display = 'block';
-            document.getElementById('response').innerHTML = '';
-        }
-        
-        function hideThinking() {
-            document.getElementById('thinkingIndicator').style.display = 'none';
-        }
-        
-        async function askQuestion() {
-            if (!authToken) {
-                document.getElementById('signinModal').style.display = 'flex';
-                return;
-            }
-            
-            const question = document.getElementById('question').value.trim();
-            const responseDiv = document.getElementById('response');
-            
-            if (!question) {
-                responseDiv.innerHTML = '<span style="color: red;">❌ ' + (currentLanguage === 'en' ? 'Please enter a question.' : 'कृपया एक प्रश्न दर्ज करें।') + '</span>';
-                return;
-            }
-            
-            showThinking();
-            
-            try {
-                const response = await fetch(`${API_URL}/api/v1/chat`, {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${authToken}`
-                    },
-                    body: JSON.stringify({ 
-                        question: question, 
-                        session_id: "web_" + Date.now(),
-                        language: currentLanguage
-                    })
-                });
-                
-                if (response.status === 401) {
-                    logout();
-                    hideThinking();
-                    responseDiv.innerHTML = '<span style="color: red;">Session expired. Please sign in again.</span>';
-                    return;
-                }
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}`);
-                }
-                
-                const data = await response.json();
-                hideThinking();
-                responseDiv.innerHTML = data.response;
-            } catch (error) {
-                hideThinking();
-                responseDiv.innerHTML = `<span style="color: red;">❌ Error: ${error.message}</span>`;
-            }
-        }
-        
-        document.getElementById('question').addEventListener('keydown', function(e) {
-            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-                askQuestion();
-            }
+<script>
+const API_URL = "";
+let currentLanguage = 'en';
+let authToken = localStorage.getItem('authToken');
+let registrationData = {};
+
+// Always show modal initially
+document.getElementById('authModal').style.display = 'flex';
+
+if (authToken) {
+    fetchUserInfo();
+}
+
+function switchAuthTab(tab) {
+    document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+    if (tab === 'login') {
+        document.querySelector('.auth-tab:first-child').classList.add('active');
+        document.getElementById('loginForm').classList.add('active');
+    } else {
+        document.querySelector('.auth-tab:last-child').classList.add('active');
+        document.getElementById('registerForm').classList.add('active');
+        resetRegistrationSteps();
+    }
+}
+
+function resetRegistrationSteps() {
+    document.getElementById('step1').classList.add('active');
+    document.getElementById('step2').classList.remove('active');
+    document.getElementById('step3').classList.remove('active');
+    document.getElementById('step1Dot').classList.add('active');
+    document.getElementById('step1Dot').classList.remove('completed');
+    document.getElementById('step2Dot').classList.remove('active', 'completed');
+    document.getElementById('step3Dot').classList.remove('active', 'completed');
+    document.getElementById('regFirstName').value = '';
+    document.getElementById('regLastName').value = '';
+    document.getElementById('regEmail').value = '';
+    document.getElementById('regPhone').value = '';
+    document.getElementById('regPincode').value = '';
+    document.getElementById('otpCode').value = '';
+    document.getElementById('regPassword').value = '';
+    document.getElementById('regConfirmPassword').value = '';
+    document.getElementById('step1Error').textContent = '';
+    document.getElementById('step1Info').textContent = '';
+    document.getElementById('step2Error').textContent = '';
+    document.getElementById('step2Success').textContent = '';
+    document.getElementById('step3Error').textContent = '';
+}
+
+function updateStep(step) {
+    document.querySelectorAll('.reg-step').forEach(s => s.classList.remove('active'));
+    document.getElementById(`step${step}`).classList.add('active');
+    for (let i = 1; i <= 3; i++) {
+        const dot = document.getElementById(`step${i}Dot`);
+        dot.classList.remove('active');
+        if (i < step) dot.classList.add('completed');
+        if (i === step) dot.classList.add('active');
+    }
+}
+
+async function sendOTP() {
+    const firstName = document.getElementById('regFirstName').value.trim();
+    const lastName = document.getElementById('regLastName').value.trim();
+    const email = document.getElementById('regEmail').value.trim();
+    const phone = document.getElementById('regPhone').value.trim();
+    const pincode = document.getElementById('regPincode').value.trim();
+    const errorDiv = document.getElementById('step1Error');
+    const infoDiv = document.getElementById('step1Info');
+    
+    errorDiv.textContent = '';
+    infoDiv.textContent = '';
+    
+    if (!firstName || !lastName) {
+        errorDiv.textContent = 'Please enter first and last name';
+        return;
+    }
+    if (!email) {
+        errorDiv.textContent = 'Please enter email address';
+        return;
+    }
+    if (!phone) {
+        errorDiv.textContent = 'Please enter phone number';
+        return;
+    }
+    if (!phone.match(/^\+?[1-9]\d{1,14}$/)) {
+        errorDiv.textContent = 'Please enter valid phone number with country code (e.g., +919876543210)';
+        return;
+    }
+    
+    registrationData = { firstName, lastName, email, phone, pincode };
+    
+    const btn = document.getElementById('sendOtpBtn');
+    btn.disabled = true;
+    btn.textContent = 'Sending...';
+    
+    try {
+        const response = await fetch(`${API_URL}/api/v1/auth/send-otp`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                email: email,
+                first_name: firstName,
+                last_name: lastName,
+                phone_number: phone,
+                pincode: pincode || null
+            })
         });
         
-        setLanguage('en');
+        const data = await response.json();
         
-        if (!authToken) {
-            document.getElementById('signinModal').style.display = 'flex';
+        if (response.ok) {
+            document.getElementById('otpEmailDisplay').textContent = `OTP sent to ${email}`;
+            infoDiv.textContent = 'OTP sent! Please check your email or EC2 terminal for the code.';
+            updateStep(2);
+        } else {
+            errorDiv.textContent = data.detail || 'Failed to send OTP';
         }
-    </script>
+    } catch (error) {
+        errorDiv.textContent = 'Error: ' + error.message;
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'Send OTP';
+    }
+}
+
+async function resendOTP() {
+    const email = registrationData.email;
+    const errorDiv = document.getElementById('step2Error');
+    const successDiv = document.getElementById('step2Success');
+    const btn = document.getElementById('resendOtpBtn');
+    
+    errorDiv.textContent = '';
+    successDiv.textContent = '';
+    btn.disabled = true;
+    btn.textContent = 'Sending...';
+    
+    try {
+        const response = await fetch(`${API_URL}/api/v1/auth/resend-otp`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: email })
+        });
+        
+        if (response.ok) {
+            successDiv.textContent = 'OTP resent! Please check your email.';
+        } else if (response.status === 429) {
+            errorDiv.textContent = 'Please wait 30 seconds before requesting another OTP.';
+        } else {
+            errorDiv.textContent = 'Failed to resend OTP.';
+        }
+    } catch (error) {
+        errorDiv.textContent = 'Error: ' + error.message;
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'Resend OTP';
+    }
+}
+
+async function verifyOTP() {
+    const otp = document.getElementById('otpCode').value.trim();
+    const errorDiv = document.getElementById('step2Error');
+    const successDiv = document.getElementById('step2Success');
+    
+    errorDiv.textContent = '';
+    successDiv.textContent = '';
+    
+    if (!otp || otp.length !== 6) {
+        errorDiv.textContent = 'Please enter 6-digit OTP';
+        return;
+    }
+    
+    const btn = document.getElementById('verifyOtpBtn');
+    btn.disabled = true;
+    btn.textContent = 'Verifying...';
+    
+    try {
+        const response = await fetch(`${API_URL}/api/v1/auth/verify-otp-only`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                email: registrationData.email,
+                otp: otp
+            })
+        });
+        
+        if (response.ok) {
+            successDiv.textContent = 'OTP verified! Now create your password.';
+            updateStep(3);
+        } else {
+            const data = await response.json();
+            errorDiv.textContent = data.detail || 'Invalid OTP';
+        }
+    } catch (error) {
+        errorDiv.textContent = 'Error: ' + error.message;
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'Verify OTP';
+    }
+}
+
+async function completeRegistration() {
+    const password = document.getElementById('regPassword').value;
+    const confirmPassword = document.getElementById('regConfirmPassword').value;
+    const errorDiv = document.getElementById('step3Error');
+    
+    errorDiv.textContent = '';
+    
+    if (!password || password.length < 6) {
+        errorDiv.textContent = 'Password must be at least 6 characters';
+        return;
+    }
+    if (password !== confirmPassword) {
+        errorDiv.textContent = 'Passwords do not match';
+        return;
+    }
+    
+    const btn = document.getElementById('completeBtn');
+    btn.disabled = true;
+    btn.textContent = 'Registering...';
+    
+    try {
+        const response = await fetch(`${API_URL}/api/v1/auth/complete-registration`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                email: registrationData.email,
+                first_name: registrationData.firstName,
+                last_name: registrationData.lastName,
+                phone_number: registrationData.phone,
+                pincode: registrationData.pincode || null,
+                password: password
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok && data.access_token) {
+            authToken = data.access_token;
+            localStorage.setItem('authToken', authToken);
+            document.getElementById('authModal').style.display = 'none';
+            document.getElementById('userInfo').classList.remove('hidden');
+            document.getElementById('userName').textContent = `Welcome, ${registrationData.firstName} ${registrationData.lastName}!`;
+        } else {
+            errorDiv.textContent = data.detail || 'Registration failed';
+            btn.disabled = false;
+            btn.textContent = 'Complete Registration';
+        }
+    } catch (error) {
+        errorDiv.textContent = 'Error: ' + error.message;
+        btn.disabled = false;
+        btn.textContent = 'Complete Registration';
+    }
+}
+
+async function login() {
+    const identifier = document.getElementById('loginIdentifier').value.trim();
+    const password = document.getElementById('loginPassword').value;
+    const errorDiv = document.getElementById('loginError');
+    
+    errorDiv.textContent = '';
+    
+    if (!identifier || !password) {
+        errorDiv.textContent = 'Please enter email/phone and password';
+        return;
+    }
+    
+    const btn = event.target;
+    btn.disabled = true;
+    btn.textContent = 'Logging in...';
+    
+    try {
+        const response = await fetch(`${API_URL}/api/v1/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ identifier: identifier, password: password })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok && data.access_token) {
+            authToken = data.access_token;
+            localStorage.setItem('authToken', authToken);
+            document.getElementById('authModal').style.display = 'none';
+            document.getElementById('userInfo').classList.remove('hidden');
+            document.getElementById('userName').textContent = `Welcome, ${data.first_name || identifier.split('@')[0]}!`;
+        } else {
+            errorDiv.textContent = data.detail || 'Invalid email/phone or password';
+            btn.disabled = false;
+            btn.textContent = 'Login';
+        }
+    } catch (error) {
+        errorDiv.textContent = 'Error: ' + error.message;
+        btn.disabled = false;
+        btn.textContent = 'Login';
+    }
+}
+
+async function fetchUserInfo() {
+    try {
+        const response = await fetch(`${API_URL}/api/v1/auth/me`, {
+            headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+        if (response.ok) {
+            const user = await response.json();
+            document.getElementById('userName').textContent = `Welcome, ${user.first_name || user.email.split('@')[0]}!`;
+            document.getElementById('userInfo').classList.remove('hidden');
+            document.getElementById('authModal').style.display = 'none';
+        } else {
+            logout();
+        }
+    } catch (error) { 
+        logout();
+    }
+}
+
+function logout() {
+    localStorage.removeItem('authToken');
+    authToken = null;
+    document.getElementById('authModal').style.display = 'flex';
+    document.getElementById('userInfo').classList.add('hidden');
+    document.getElementById('loginIdentifier').value = '';
+    document.getElementById('loginPassword').value = '';
+    resetRegistrationSteps();
+    switchAuthTab('login');
+}
+
+async function askQuestion() {
+    if (!authToken) {
+        document.getElementById('authModal').style.display = 'flex';
+        return;
+    }
+    const question = document.getElementById('question').value.trim();
+    if (!question) { return; }
+    document.getElementById('thinkingIndicator').style.display = 'block';
+    document.getElementById('response').innerHTML = '';
+    try {
+        const response = await fetch(`${API_URL}/api/v1/chat`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
+            body: JSON.stringify({ question: question, session_id: "web_" + Date.now(), language: currentLanguage })
+        });
+        if (response.status === 401) { logout(); }
+        const data = await response.json();
+        document.getElementById('thinkingIndicator').style.display = 'none';
+        document.getElementById('response').innerHTML = data.response;
+    } catch (error) {
+        document.getElementById('thinkingIndicator').style.display = 'none';
+        document.getElementById('response').innerHTML = `<span style="color: red;">Error: ${error.message}</span>`;
+    }
+}
+
+const translations = {
+    en: { subtitle: "Ask questions based on his writings, speeches, and parliamentary debates", placeholder: "Example: What is your view on the caste system?", askButton: "Ask Dr. Ambedkar", thinking: "Dr. Ambedkar is reflecting on your question", sampleQuestions: [
+        { text: "📜 Caste System", question: "What is your view on the caste system?" },
+        { text: "📚 Education", question: "Why is education important?" },
+        { text: "💬 Message to Youth", question: "What is your message to young people?" },
+        { text: "⚖️ Social Justice", question: "What is social justice?" }
+    ] },
+    hi: { subtitle: "डॉ. बाबासाहेब अंबेडकर के लेखन, भाषणों और संसदीय बहसों पर आधारित प्रश्न पूछें", placeholder: "उदाहरण: जाति व्यवस्था पर आपके क्या विचार हैं?", askButton: "डॉ. अंबेडकर से पूछें", thinking: "डॉ. अंबेडकर आपके प्रश्न पर विचार कर रहे हैं", sampleQuestions: [
+        { text: "📜 जाति व्यवस्था", question: "जाति व्यवस्था पर आपके क्या विचार हैं?" },
+        { text: "📚 शिक्षा", question: "शिक्षा क्यों महत्वपूर्ण है?" },
+        { text: "💬 युवाओं के लिए संदेश", question: "युवाओं के लिए आपका क्या संदेश है?" },
+        { text: "⚖️ सामाजिक न्याय", question: "सामाजिक न्याय क्या है?" }
+    ] },
+    bn: { subtitle: "ডঃ বি.আর. আম্বেদকরের লেখা, বক্তৃতা এবং সংসদীয় বিতর্কের ভিত্তিতে প্রশ্ন করুন", placeholder: "উদাহরণ: জাত ব্যবস্থা সম্পর্কে আপনার দৃষ্টিভঙ্গি কী?", askButton: "ডঃ আম্বেদকরকে জিজ্ঞাসা করুন", thinking: "ডঃ আম্বেদকর আপনার প্রশ্নটি নিয়ে চিন্তা করছেন", sampleQuestions: [
+        { text: "📜 জাত ব্যবস্থা", question: "জাত ব্যবস্থা সম্পর্কে আপনার দৃষ্টিভঙ্গি কী?" },
+        { text: "📚 শিক্ষা", question: "শিক্ষা কেন গুরুত্বপূর্ণ?" },
+        { text: "💬 যুবকদের জন্য বার্তা", question: "যুবকদের জন্য আপনার বার্তা কী?" },
+        { text: "⚖️ সামাজিক ন্যায়বিচার", question: "সামাজিক ন্যায়বিচার কী?" }
+    ] }
+};
+
+function setLanguage(lang) {
+    currentLanguage = lang;
+    document.querySelectorAll('.lang-tab').forEach(tab => tab.classList.remove('active'));
+    if (lang === 'en') document.querySelector('.lang-tab:first-child').classList.add('active');
+    else if (lang === 'hi') document.querySelector('.lang-tab:nth-child(2)').classList.add('active');
+    else document.querySelector('.lang-tab:last-child').classList.add('active');
+    const t = translations[lang];
+    document.getElementById('subtitle').textContent = t.subtitle;
+    document.getElementById('question').placeholder = t.placeholder;
+    document.getElementById('askBtn').textContent = t.askButton;
+    document.getElementById('thinkingText').textContent = t.thinking;
+    const container = document.getElementById('sampleQuestions');
+    container.innerHTML = '';
+    t.sampleQuestions.forEach(sq => {
+        const btn = document.createElement('button');
+        btn.className = 'sample-btn';
+        btn.textContent = sq.text;
+        btn.onclick = () => { document.getElementById('question').value = sq.question; askQuestion(); };
+        container.appendChild(btn);
+    });
+}
+
+setLanguage('en');
+</script>
 </body>
 </html>
