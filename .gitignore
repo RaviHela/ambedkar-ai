@@ -19,3 +19,5 @@ create_documentation.py
 backend/chroma_db_*.tar.gz
 ._*
 *.DS_Store
+._*
+*.DS_Store
