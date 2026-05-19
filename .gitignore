@@ -21,3 +21,5 @@ backend/chroma_db_*.tar.gz
 *.DS_Store
 ._*
 *.DS_Store
+._*
+*.DS_Store
