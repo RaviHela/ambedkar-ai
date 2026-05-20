@@ -126,6 +126,26 @@
         .footer { margin-top: 25px; font-size: 12px; color: #999; text-align: center; border-top: 1px solid #eee; padding-top: 20px; }
         .sample-questions { margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap; }
         .sample-btn { background: #e8e8e8; color: #333; padding: 8px 15px; font-size: 12px; border-radius: 20px; cursor: pointer; }
+        
+        label {
+            display: block;
+            margin-top: 10px;
+            margin-bottom: 5px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #333;
+        }
+        .required-star {
+            color: red;
+            margin-left: 3px;
+        }
+        small {
+            display: block;
+            font-size: 11px;
+            color: #666;
+            margin-top: -5px;
+            margin-bottom: 5px;
+        }
     </style>
 </head>
 <body>
@@ -185,19 +205,27 @@
             
             <div id="step1" class="reg-step active">
                 <p>Step 1: Personal Details</p>
-                <div class="row">
-                    <input type="text" id="regFirstName" placeholder="First Name *" required>
-                    <input type="text" id="regLastName" placeholder="Last Name *" required>
-                </div>
-                <input type="email" id="regEmail" placeholder="Email Address *" required>
-                <div class="row">
-                    <input type="tel" id="regPhone" placeholder="Phone Number * (e.g., +919876543210)" required>
-                    <input type="date" id="regDob" placeholder="Date of Birth">
-                </div>
-                <div class="row">
-                    <input type="text" id="regPincode" placeholder="Pincode (Optional)" maxlength="6">
-                    <div style="width: 50%;"></div>
-                </div>
+                
+                <label>First Name <span class="required-star">*</span></label>
+                <input type="text" id="regFirstName" placeholder="Enter your first name" required>
+                
+                <label>Last Name <span class="required-star">*</span></label>
+                <input type="text" id="regLastName" placeholder="Enter your last name" required>
+                
+                <label>Email Address <span class="required-star">*</span></label>
+                <input type="email" id="regEmail" placeholder="your@email.com" required>
+                
+                <label>Phone Number <span class="required-star">*</span></label>
+                <input type="tel" id="regPhone" placeholder="+919876543210" required>
+                
+                <label>Date of Birth <span class="required-star">*</span></label>
+                <input type="date" id="regDob" required>
+                <small>Format: YYYY-MM-DD</small>
+                
+                <label>Pincode <span class="required-star">*</span></label>
+                <input type="text" id="regPincode" placeholder="6-digit pincode" maxlength="6" pattern="[0-9]{6}" required>
+                <small>6-digit numeric code</small>
+                
                 <button onclick="sendOTP()" id="sendOtpBtn">Send OTP</button>
                 <div id="step1Error" class="error"></div>
                 <div id="step1Info" class="info"></div>
@@ -292,6 +320,7 @@ async function sendOTP() {
     errorDiv.textContent = '';
     infoDiv.textContent = '';
     
+    // Validation checks
     if (!firstName || !lastName) {
         errorDiv.textContent = 'Please enter first and last name';
         return;
@@ -306,6 +335,18 @@ async function sendOTP() {
     }
     if (!phone.match(/^\+?[1-9]\d{1,14}$/)) {
         errorDiv.textContent = 'Please enter valid phone number with country code (e.g., +919876543210)';
+        return;
+    }
+    if (!dob) {
+        errorDiv.textContent = 'Please enter your date of birth';
+        return;
+    }
+    if (!pincode) {
+        errorDiv.textContent = 'Please enter your pincode';
+        return;
+    }
+    if (!pincode.match(/^[0-9]{6}$/)) {
+        errorDiv.textContent = 'Please enter a valid 6-digit pincode';
         return;
     }
     
@@ -324,8 +365,8 @@ async function sendOTP() {
                 first_name: firstName,
                 last_name: lastName,
                 phone_number: phone,
-                pincode: pincode || null,
-                date_of_birth: dob || null
+                pincode: pincode,
+                date_of_birth: dob
             })
         });
         
@@ -450,8 +491,8 @@ async function completeRegistration() {
                 first_name: registrationData.firstName,
                 last_name: registrationData.lastName,
                 phone_number: registrationData.phone,
-                pincode: registrationData.pincode || null,
-                date_of_birth: registrationData.dob || null,
+                pincode: registrationData.pincode,
+                date_of_birth: registrationData.dob,
                 password: password
             })
         });
