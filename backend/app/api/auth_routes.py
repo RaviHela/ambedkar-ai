@@ -8,7 +8,7 @@ from app.services.otp_service import OTPService
 from app.services.jwt_service import JWTService
 from app.services.geolocation_service import GeolocationService
 
-router = APIRouter(prefix="/auth", tags=["Authentication"])
+router = APIRouter(tags=["Authentication"])
 otp_service = OTPService()
 jwt_service = JWTService()
 geo_service = GeolocationService()
