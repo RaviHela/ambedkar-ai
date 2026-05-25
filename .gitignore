@@ -24,3 +24,6 @@ backend/chroma_db_*.tar.gz
 ._*
 *.DS_Store
 ambedkar-ai-app_accessKeys.csv
+*.backup*
+*.backup_constitution
+backend/data/
