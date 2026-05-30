@@ -4,22 +4,28 @@ from datetime import datetime
 from collections import defaultdict
 from typing import List, Dict, Optional
 from app.config import Config
-from app.services.vector_store import VectorStoreManager
-from app.models.persona_manager import PersonaManager
+import chromadb
 
 class ChatService:
     def __init__(self):
-        self.vector_store = VectorStoreManager()
-        self.persona = PersonaManager()
         self.conversation_memory = defaultdict(list)
         self.max_memory_length = 10
         self.claude_client = None
+        self.chroma_client = None
+        self.baws_collection = None
+        self.constitution_collection = None
         
-        # Initialize DynamoDB (using IAM role, no keys needed)
-        self.dynamodb = boto3.resource('dynamodb', region_name='ap-south-1')
-        self.questions_table = None
-        self._init_tables()
+        # Initialize ChromaDB
+        try:
+            self.chroma_client = chromadb.PersistentClient(path="./chroma_db")
+            self.baws_collection = self.chroma_client.get_collection("langchain")
+            self.constitution_collection = self.chroma_client.get_collection("constitution_1955")
+            print(f"✅ BAWS: {self.baws_collection.count()} documents")
+            print(f"✅ Constitution 1955: {self.constitution_collection.count()} documents")
+        except Exception as e:
+            print(f"⚠️ ChromaDB error: {e}")
         
+        # Initialize Claude
         if Config.ANTHROPIC_API_KEY:
             try:
                 self.claude_client = anthropic.Anthropic(api_key=Config.ANTHROPIC_API_KEY)
@@ -27,59 +33,47 @@ class ChatService:
             except Exception as e:
                 print(f"Error: {e}")
     
-    def _init_tables(self):
-        """Create DynamoDB tables if they don't exist"""
-        try:
-            self.questions_table = self.dynamodb.create_table(
-                TableName='ambedkar_questions',
-                KeySchema=[
-                    {'AttributeName': 'user_id', 'KeyType': 'HASH'},
-                    {'AttributeName': 'timestamp', 'KeyType': 'RANGE'}
-                ],
-                AttributeDefinitions=[
-                    {'AttributeName': 'user_id', 'AttributeType': 'S'},
-                    {'AttributeName': 'timestamp', 'AttributeType': 'S'}
-                ],
-                BillingMode='PAY_PER_REQUEST'
-            )
-            print("✅ Created questions table")
-        except self.dynamodb.meta.client.exceptions.ResourceInUseException:
-            self.questions_table = self.dynamodb.Table('ambedkar_questions')
-            print("📋 Questions table already exists")
-    
-    def track_user_question(self, user_id: str, question: str, response: str, session_id: str):
-        """Track user questions in DynamoDB"""
-        if not self.questions_table:
-            return
-        try:
-            self.questions_table.put_item(
-                Item={
-                    'user_id': user_id,
-                    'timestamp': datetime.now().isoformat(),
-                    'question': question[:1000],
-                    'response': response[:1000],
-                    'session_id': session_id
-                }
-            )
-            # Update user's question count
-            users_table = self.dynamodb.Table('ambedkar_users')
-            users_table.update_item(
-                Key={'user_id': user_id},
-                UpdateExpression='ADD total_questions :inc',
-                ExpressionAttributeValues={':inc': 1}
-            )
-            print(f"📝 Tracked question from user: {user_id[:8]}...")
-        except Exception as e:
-            print(f"⚠️ Failed to track question: {e}")
+    def search_all_sources(self, question: str, n_results: int = 3) -> tuple:
+        """Search both BAWS and Constitution collections"""
+        all_context = []
+        all_sources = []
+        
+        # Search BAWS
+        if self.baws_collection:
+            try:
+                baws_results = self.baws_collection.query(query_texts=[question], n_results=n_results)
+                if baws_results['documents'] and baws_results['documents'][0]:
+                    for i, doc in enumerate(baws_results['documents'][0]):
+                        all_context.append(f"[BAWS]\n{doc[:600]}")
+                        all_sources.append("BAWS - Dr. B.R. Ambedkar's Writings")
+            except Exception as e:
+                print(f"BAWS search error: {e}")
+        
+        # Search Constitution
+        if self.constitution_collection:
+            try:
+                const_results = self.constitution_collection.query(query_texts=[question], n_results=n_results)
+                if const_results['documents'] and const_results['documents'][0]:
+                    for i, doc in enumerate(const_results['documents'][0]):
+                        all_context.append(f"[Constitution of India 1955]\n{doc[:600]}")
+                        all_sources.append("Constitution of India (1955)")
+            except Exception as e:
+                print(f"Constitution search error: {e}")
+        
+        combined_context = "\n\n---\n\n".join(all_context)
+        unique_sources = list(set(all_sources))
+        
+        return combined_context, unique_sources
     
     async def get_response(self, question: str, user_id: str = "anonymous", 
                           session_id: str = "default", 
                           language: str = "en", 
                           chat_history: Optional[List[Dict]] = None) -> Dict:
         
-        retrieved_docs = self.vector_store.search(question, k=5)
+        # Search both sources
+        context, sources = self.search_all_sources(question)
         
-        if not retrieved_docs:
+        if not context:
             return {
                 "response": "I do not have sufficient information in my recorded writings to answer this question.",
                 "sources": [],
@@ -87,66 +81,63 @@ class ChatService:
                 "session_id": session_id
             }
         
-        context = self.persona.format_context(retrieved_docs)
-        sources = list(set([doc[0].metadata.get('source', 'Unknown') for doc in retrieved_docs]))
-        conversation_context = self._get_conversation_context(session_id)
-        
         if self.claude_client:
-            response_text = self._get_claude_response(question, context, conversation_context, language)
+            response_text = self._get_claude_response(question, context, sources, language)
         else:
             response_text = "Claude API not available. Please check your API key."
         
-        self._add_to_memory(session_id, question, response_text)
-        
-        if user_id != "anonymous":
-            self.track_user_question(user_id, question, response_text, session_id)
-        
-        response_text = self.persona.add_disclaimer(response_text, sources)
+        # Add source footnote
+        footnote = self._get_footnote(sources, language)
         
         return {
-            "response": response_text,
+            "response": response_text + footnote,
             "sources": sources,
             "disclaimer": True,
             "session_id": session_id
         }
     
-    def _get_conversation_context(self, session_id: str) -> str:
-        memory = self.conversation_memory[session_id]
-        if not memory:
-            return ""
-        context = "Previous conversation:\n"
-        for item in memory[-self.max_memory_length:]:
-            context += f"User: {item['question'][:200]}\n"
-            context += f"Dr. Ambedkar: {item['response'][:200]}\n\n"
-        return context
-    
-    def _add_to_memory(self, session_id: str, question: str, response: str):
-        self.conversation_memory[session_id].append({
-            "question": question,
-            "response": response,
-            "timestamp": datetime.now().isoformat()
-        })
-        if len(self.conversation_memory[session_id]) > self.max_memory_length:
-            self.conversation_memory[session_id] = self.conversation_memory[session_id][-self.max_memory_length:]
-    
-    def _get_claude_response(self, question: str, context: str, conversation_context: str, language: str) -> str:
-        prompt = f"Context: {context}\n\n{conversation_context}\n\nQuestion: {question}\n\nRespond as Dr. Ambedkar:"
+    def _get_footnote(self, sources: list, language: str) -> str:
+        if not sources:
+            sources = ["Dr. B.R. Ambedkar's Writings and Constitution of India"]
         
         if language == "hi":
-            prompt = f"हिंदी में उत्तर दें। संदर्भ: {context}\n\n{conversation_context}\n\nप्रश्न: {question}\n\nडॉ. अंबेडकर के रूप में उत्तर दें:"
+            return "\n\n---\n📚 **स्रोत:**\n" + "\n".join([f"- {v}" for v in sources]) + "\n\n*AI प्रतिक्रिया डॉ. अम्बेडकर के लेखन और भारत के संविधान पर आधारित है.*"
         elif language == "bn":
-            prompt = f"বাংলায় উত্তর দিন। প্রসঙ্গ: {context}\n\n{conversation_context}\n\nপ্রশ্ন: {question}\n\nডঃ আম্বেদকর হিসাবে উত্তর দিন:"
-        
+            return "\n\n---\n📚 **উৎস:**\n" + "\n".join([f"- {v}" for v in sources]) + "\n\n*AI প্রতিক্রিয়া ডঃ আম্বেদকরের রচনা এবং ভারতের সংবিধানের উপর ভিত্তি করে তৈরি.*"
+        else:
+            return "\n\n---\n📚 **Sources:**\n" + "\n".join([f"- {v}" for v in sources]) + "\n\n*AI response based on Dr. Ambedkar's writings and the Constitution of India.*"
+    
+    def _get_claude_response(self, question: str, context: str, sources: list, language: str) -> str:
         try:
+            lang_instruction = "Respond in English."
+            if language == "hi":
+                lang_instruction = "CRITICAL: Respond ONLY in HINDI language. Use Devanagari script."
+            elif language == "bn":
+                lang_instruction = "CRITICAL: Respond ONLY in BENGALI language. Use Bengali script."
+            
+            system_prompt = f"""You are Dr. B.R. Ambedkar. Answer as if you are him. Use first person 'I' and 'my'.
+{lang_instruction}
+Base your answers on the provided context from my writings and the Constitution of India.
+When referencing the Constitution, say "In the Constitution I helped draft, Article X states..."
+Be direct, authoritative, and conversational."""
+            
+            user_prompt = f"""Context from my writings and the Constitution:
+{context}
+
+Question: {question}
+
+Answer directly as Dr. B.R. Ambedkar:"""
+            
             response = self.claude_client.messages.create(
                 model="claude-sonnet-4-5-20250929",
-                max_tokens=500,
+                max_tokens=800,
                 temperature=0.7,
-                messages=[{"role": "user", "content": prompt}]
+                system=system_prompt,
+                messages=[{"role": "user", "content": user_prompt}]
             )
             return response.content[0].text
         except Exception as e:
-            print(f"❌ Claude error: {e}")
+            print(f"Claude API error: {e}")
             return f"Based on my writings: {context[:300]}"
     
     def get_sample_questions(self, language: str = "en") -> List[str]:
@@ -160,10 +151,12 @@ class ChatService:
             return [
                 "জাত ব্যবস্থা সম্পর্কে আপনার দৃষ্টিভঙ্গি কী?",
                 "শিক্ষা কেন গুরুত্বপূর্ণ?",
-                "যুবকদের জন্য您的 বার্তা কী?"
+                "যুবকদের জন্য আপনার বার্তা কী?"
             ]
         return [
             "What is your view on the caste system?",
             "Why is education important?",
             "What is your message to young people?"
         ]
+
+chat_service = ChatService()
