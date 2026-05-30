@@ -5,6 +5,7 @@ from collections import defaultdict
 from typing import List, Dict, Optional
 from app.config import Config
 import chromadb
+import re
 
 class ChatService:
     def __init__(self):
@@ -33,6 +34,33 @@ class ChatService:
             except Exception as e:
                 print(f"Error: {e}")
     
+    def extract_volume_name(self, source_file: str) -> str:
+        """Extract readable volume name from source file"""
+        volume_names = {
+            "1": "BAWS Volume 1 - Castes in India",
+            "2": "BAWS Volume 2 - Annihilation of Caste",
+            "3": "BAWS Volume 3 - What Congress and Gandhi Have Done",
+            "5": "BAWS Volume 5 - Essays on Untouchables",
+            "9": "BAWS Volume 9 - The Buddha and His Dhamma",
+            "13": "BAWS Volume 13 - Draft Constitution",
+            "16": "BAWS Volume 16 - Pali Dictionary"
+        }
+        
+        match = re.search(r'BAWS[_\-]*Volume[_\-]*(\d+)', source_file, re.IGNORECASE)
+        if match:
+            vol_num = match.group(1)
+            return volume_names.get(vol_num, f"BAWS Volume {vol_num}")
+        return "BAWS - Dr. B.R. Ambedkar's Writings"
+    
+    def extract_article_info(self, doc: str) -> str:
+        """Extract article information from constitution text"""
+        match = re.search(r'(\d+)\.\s+([A-Z][^.\n]{0,80})', doc)
+        if match:
+            article_num = match.group(1)
+            article_title = match.group(2).strip()
+            return f"Constitution of India (1955) - Article {article_num}: {article_title}"
+        return "Constitution of India (1955)"
+    
     def search_all_sources(self, question: str, n_results: int = 3) -> tuple:
         """Search both BAWS and Constitution collections"""
         all_context = []
@@ -44,8 +72,15 @@ class ChatService:
                 baws_results = self.baws_collection.query(query_texts=[question], n_results=n_results)
                 if baws_results['documents'] and baws_results['documents'][0]:
                     for i, doc in enumerate(baws_results['documents'][0]):
-                        all_context.append(f"[BAWS]\n{doc[:600]}")
-                        all_sources.append("BAWS - Dr. B.R. Ambedkar's Writings")
+                        # Extract volume name from metadata
+                        volume_name = "BAWS - Dr. B.R. Ambedkar's Writings"
+                        if baws_results['metadatas'] and baws_results['metadatas'][0]:
+                            metadata = baws_results['metadatas'][0][i] if i < len(baws_results['metadatas'][0]) else {}
+                            source_file = metadata.get('source', '')
+                            if source_file:
+                                volume_name = self.extract_volume_name(source_file)
+                        all_context.append(f"[{volume_name}]\n{doc[:600]}")
+                        all_sources.append(volume_name)
             except Exception as e:
                 print(f"BAWS search error: {e}")
         
@@ -55,8 +90,9 @@ class ChatService:
                 const_results = self.constitution_collection.query(query_texts=[question], n_results=n_results)
                 if const_results['documents'] and const_results['documents'][0]:
                     for i, doc in enumerate(const_results['documents'][0]):
-                        all_context.append(f"[Constitution of India 1955]\n{doc[:600]}")
-                        all_sources.append("Constitution of India (1955)")
+                        article_info = self.extract_article_info(doc)
+                        all_context.append(f"[{article_info}]\n{doc[:600]}")
+                        all_sources.append(article_info)
             except Exception as e:
                 print(f"Constitution search error: {e}")
         
