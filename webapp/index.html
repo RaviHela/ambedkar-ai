@@ -5,6 +5,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
+        .notice-message {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .notice-message strong {
+            color: #856404;
+        }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -146,7 +156,46 @@
             margin-top: -5px;
             margin-bottom: 5px;
         }
-    </style>
+    
+        /* Mobile Responsive Header */
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+            }
+            .header h1 {
+                justify-content: center;
+            }
+            .user-info {
+                justify-content: center;
+                width: 100%;
+            }
+            .donation-header-btn {
+                font-size: 12px;
+                padding: 4px 10px;
+            }
+            .logout-btn {
+                font-size: 12px;
+                padding: 4px 10px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .donation-header-btn {
+                font-size: 10px;
+                padding: 3px 8px;
+            }
+            .logout-btn {
+                font-size: 10px;
+                padding: 3px 8px;
+            }
+            .user-info {
+                gap: 8px;
+            }
+        }
+
+</style>
 </head>
 <body>
 <div class="container" id="app">
@@ -157,6 +206,7 @@
         </h1>
         <div id="userInfo" class="user-info hidden">
             <span id="userName"></span>
+            <button class="donation-header-btn" onclick="showDonationModal()" style="background: #ffd700; color: #1e3c72; border: none; padding: 5px 12px; border-radius: 20px; cursor: pointer; font-weight: bold; margin-right: 10px;">❤️ Support Us</button>
             <button class="logout-btn" onclick="logout()">Logout</button>
         </div>
     </div>
@@ -604,10 +654,27 @@ async function askQuestion() {
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
             body: JSON.stringify({ question: question, session_id: "web_" + Date.now(), language: currentLanguage })
         });
-        if (response.status === 401) { logout(); }
+        
         const data = await response.json();
         document.getElementById('thinkingIndicator').style.display = 'none';
-        document.getElementById('response').innerHTML = data.response;
+        
+        // Check if the response has an error or detail field
+        if (response.status === 401) { 
+            logout(); 
+            return;
+        }
+        
+        if (data.detail) {
+            // Show API error message (like rate limit)
+            document.getElementById('response').innerHTML = `<div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; border-radius: 5px;">
+                <strong>⚠️ Notice</strong><br>
+                ${data.detail}
+            </div>`;
+        } else if (data.response) {
+            document.getElementById('response').innerHTML = data.response;
+        } else {
+            document.getElementById('response').innerHTML = `<span style="color: red;">Unexpected response from server</span>`;
+        }
     } catch (error) {
         document.getElementById('thinkingIndicator').style.display = 'none';
         document.getElementById('response').innerHTML = `<span style="color: red;">Error: ${error.message}</span>`;
@@ -729,3 +796,351 @@ setLanguage('en');
 </script>
 </body>
 </html>
+
+<!-- Donation Badge Section -->
+<style>
+        .notice-message {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .notice-message strong {
+            color: #856404;
+        }
+    .donation-section {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 1000;
+    }
+    
+    .donation-badge {
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        border-radius: 50px;
+        padding: 12px 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        cursor: pointer;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: none;
+        color: white;
+        font-family: inherit;
+    }
+    
+    .donation-badge:hover {
+        transform: scale(1.05);
+        box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+    }
+    
+    .donation-badge .heart {
+        font-size: 24px;
+        animation: heartbeat 1.5s ease infinite;
+    }
+    
+    @keyframes heartbeat {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.2); }
+    }
+    
+    .donation-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.8);
+        z-index: 2000;
+        justify-content: center;
+        align-items: center;
+    }
+    
+    .donation-modal-content {
+        background: white;
+        border-radius: 20px;
+        padding: 30px;
+        max-width: 400px;
+        width: 90%;
+        text-align: center;
+        animation: slideIn 0.3s ease;
+    }
+    
+    @keyframes slideIn {
+        from {
+            transform: translateY(-50px);
+            opacity: 0;
+        }
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+    
+    .donation-options {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin: 20px 0;
+    }
+    
+    .donation-btn {
+        background: #2a5298;
+        color: white;
+        border: none;
+        padding: 12px 20px;
+        border-radius: 25px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background 0.3s ease;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+    
+    .donation-btn:hover {
+        background: #1e3c72;
+    }
+    
+    .donation-btn.upi {
+        background: #4caf50;
+    }
+    
+    .donation-btn.upi:hover {
+        background: #45a049;
+    }
+    
+    .donation-btn.bmc {
+        background: #FFDD00;
+        color: #333;
+    }
+    
+    .close-donation {
+        background: #666;
+        margin-top: 10px;
+    }
+    
+    .close-donation:hover {
+        background: #999;
+    }
+
+        /* Mobile Responsive Header */
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+            }
+            .header h1 {
+                justify-content: center;
+            }
+            .user-info {
+                justify-content: center;
+                width: 100%;
+            }
+            .donation-header-btn {
+                font-size: 12px;
+                padding: 4px 10px;
+            }
+            .logout-btn {
+                font-size: 12px;
+                padding: 4px 10px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .donation-header-btn {
+                font-size: 10px;
+                padding: 3px 8px;
+            }
+            .logout-btn {
+                font-size: 10px;
+                padding: 3px 8px;
+            }
+            .user-info {
+                gap: 8px;
+            }
+        }
+
+</style>
+
+
+<div id="donationModal" class="donation-modal">
+    <div class="donation-modal-content">
+        <h2>🙏 Support Dr. B.R. Ambedkar AI</h2>
+        <p style="color: #666; margin: 10px 0;">Help keep this knowledge free and accessible to all.</p>
+        
+        <div class="donation-options">
+            <a href="https://www.paypal.me/ambedkarai" target="_blank" class="donation-btn">
+                💝 PayPal
+            </a>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <button onclick="payWithUPIAmount(100)" class="donation-btn upi" style="flex: 1;">
+                    🇮🇳 ₹100
+                </button>
+                <button onclick="payWithUPIAmount(500)" class="donation-btn upi" style="flex: 1;">
+                    🇮🇳 ₹500
+                </button>
+                <button onclick="payWithUPIAmount(1000)" class="donation-btn upi" style="flex: 1;">
+                    🇮🇳 ₹1,000
+                </button>
+            </div>
+            <button onclick="payWithUPI()" class="donation-btn upi">
+                🇮🇳 Custom Amount via UPI
+            </button>
+            <a href="https://buymeacoffee.com/ambedkarai" target="_blank" class="donation-btn bmc">
+                ☕ Buy Me a Coffee
+            </a>
+            <a href="https://github.com/sponsors/RaviHela" target="_blank" class="donation-btn">
+                ⭐ GitHub Sponsor
+            </a>
+        </div>
+        
+        <div id="upiMessage" style="font-size: 12px; color: #666; margin: 10px 0;"></div>
+        
+        <button onclick="closeDonationModal()" class="donation-btn close-donation">Close</button>
+    </div>
+</div>
+
+<script>
+function showDonationModal() {
+    document.getElementById('donationModal').style.display = 'flex';
+}
+
+function closeDonationModal() {
+    document.getElementById('donationModal').style.display = 'none';
+}
+
+function copyUPI() {
+    const upiId = "ravi801227@okhdfcbank";
+    navigator.clipboard.writeText(upiId);
+    const msgDiv = document.getElementById('upiMessage');
+    msgDiv.innerHTML = `✅ UPI ID copied: ${upiId}<br>Please pay using your UPI app. Jai Bhim! 🙏`;
+    msgDiv.style.color = "#4caf50";
+    setTimeout(() => {
+        msgDiv.innerHTML = "";
+    }, 5000);
+}
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    const modal = document.getElementById('donationModal');
+    if (event.target == modal) {
+        closeDonationModal();
+    }
+}
+</script>
+<script>
+function payWithUPI() {
+    const upiId = "ravi801227@okhdfcbank";
+    const name = "Dr. B.R. Ambedkar AI";
+    const amount = "";
+    const note = "Support Dr. B.R. Ambedkar AI";
+    
+    // Create UPI intent URL
+    let upiUrl = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(name)}&cu=INR`;
+    
+    // Add amount if specified (optional)
+    // upiUrl += `&am=${amount}&m=0`;
+    
+    // Add note
+    upiUrl += `&tn=${encodeURIComponent(note)}`;
+    
+    // Try to open UPI app
+    window.location.href = upiUrl;
+    
+    // Fallback: if UPI app not installed, copy to clipboard
+    setTimeout(() => {
+        navigator.clipboard.writeText(upiId);
+        alert("UPI ID copied to clipboard: " + upiId + "\n\nPlease open your UPI app and pay manually.\nJai Bhim! 🙏");
+    }, 500);
+}
+
+function payWithUPIAmount(amount) {
+    const upiId = "ravi801227@okhdfcbank";
+    const name = "Dr. B.R. Ambedkar AI";
+    const note = "Support Dr. B.R. Ambedkar AI";
+    
+    let upiUrl = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(name)}&am=${amount}&cu=INR&tn=${encodeURIComponent(note)}`;
+    
+    window.location.href = upiUrl;
+    
+    setTimeout(() => {
+        navigator.clipboard.writeText(upiId);
+        alert("UPI ID copied: " + upiId + "\n\nPlease complete payment in your UPI app.");
+    }, 500);
+}
+</script>
+<style>
+/* Responsive header for mobile */
+@media (max-width: 768px) {
+    .header {
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+    }
+    
+    .header h1 {
+        font-size: 1.2rem;
+    }
+    
+    .title-image {
+        width: 35px;
+        height: 35px;
+    }
+    
+    .user-info {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
+        width: 100%;
+    }
+    
+    .donation-header-btn {
+        font-size: 12px;
+        padding: 4px 10px;
+    }
+    
+    .logout-btn {
+        font-size: 12px;
+        padding: 4px 10px;
+    }
+}
+
+/* For very small screens */
+@media (max-width: 480px) {
+    .user-info {
+        gap: 6px;
+    }
+    
+    .donation-header-btn {
+        font-size: 10px;
+        padding: 3px 8px;
+    }
+    
+    .logout-btn {
+        font-size: 10px;
+        padding: 3px 8px;
+    }
+    
+    .donation-section {
+        bottom: 10px;
+        right: 10px;
+    }
+    
+    .donation-badge {
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+    
+    .donation-badge .heart {
+        font-size: 16px;
+    }
+}
+</style>
