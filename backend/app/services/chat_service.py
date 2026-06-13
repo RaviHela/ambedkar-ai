@@ -1,3 +1,4 @@
+from app.services.cache_service import response_cache
 import anthropic
 import boto3
 from datetime import datetime
@@ -106,6 +107,11 @@ class ChatService:
                           language: str = "en", 
                           chat_history: Optional[List[Dict]] = None) -> Dict:
         
+        # Check cache first
+        cached_response = response_cache.get(question, language)
+        if cached_response:
+            return cached_response
+        
         # Search both sources
         context, sources = self.search_all_sources(question)
         
@@ -125,12 +131,16 @@ class ChatService:
         # Add source footnote
         footnote = self._get_footnote(sources, language)
         
-        return {
+        # Store in cache
+        result = {
             "response": response_text + footnote,
             "sources": sources,
             "disclaimer": True,
             "session_id": session_id
         }
+        response_cache.set(question, language, result)
+        
+        return result
     
     def _get_footnote(self, sources: list, language: str) -> str:
         if not sources:

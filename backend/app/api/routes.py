@@ -85,3 +85,16 @@ async def get_rate_limits(user: dict = Depends(get_current_user)):
     user_id = user.get('sub')
     limits = rate_limiter.get_remaining_limits(user_id)
     return limits
+
+@router.get("/cache/stats")
+async def get_cache_stats(user: dict = Depends(get_current_user)):
+    """Get cache statistics"""
+    from app.services.cache_service import response_cache
+    return response_cache.get_stats()
+
+@router.post("/cache/clear")
+async def clear_cache(user: dict = Depends(get_current_user)):
+    """Clear response cache"""
+    from app.services.cache_service import response_cache
+    response_cache.clear()
+    return {"message": "Cache cleared successfully"}
